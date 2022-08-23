@@ -22,4 +22,16 @@ export const ERROR = {
         statusCode: 409,
         message: 'User found',
     },
+    USER_IS_VERIFIED: {
+        statusCode: 400,
+        message: 'This account is verify',
+    },
+    USER_IS_NOT_VERIFIED: {
+        statusCode: 400,
+        message: 'This account is not verified',
+    },
+    ACTIVECODE_IS_WRONG: {
+        statusCode: 400,
+        message: 'Acitve code is wrong',
+    },
 };

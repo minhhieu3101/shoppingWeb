@@ -10,7 +10,7 @@ export class UserRepository extends RepositoryUtils<User> {
         super(userRepository);
     }
 
-    async checkUserExist(username: string, email: string): Promise<User> {
+    checkUserExist(username: string, email: string): Promise<User> {
         return this.userRepository.findOne({ where: [{ username: username }, { email: email }] });
     }
 }

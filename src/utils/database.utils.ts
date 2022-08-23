@@ -7,7 +7,9 @@ export class RepositoryUtils<T extends BaseEntity> {
     constructor(private _repository: Repository<T>) {
         this.repository = _repository;
     }
-    create(item: DeepPartial<T>): Promise<T> {
+
+    // create data T to repo or update data
+    save(item: DeepPartial<T>): Promise<T> {
         return this.repository.save(item);
     }
 

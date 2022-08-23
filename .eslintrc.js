@@ -23,7 +23,7 @@ module.exports = {
             {
                 endOfLine: 'auto',
                 singleQuote: true,
-                printWidth: 150,
+                printWidth: 120,
             },
         ],
     },
