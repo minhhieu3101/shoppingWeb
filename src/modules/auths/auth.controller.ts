@@ -17,4 +17,9 @@ export class AuthController {
     login(@Body() userLogin: LoginDto): Promise<any> {
         return this.authService.login(userLogin.account, userLogin.password);
     }
+
+    @Post('getToken')
+    getNewToken(@Body() refreshToken: any): Promise<any> {
+        return this.authService.getNewToken(refreshToken.refreshToken);
+    }
 }

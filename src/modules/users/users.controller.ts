@@ -2,7 +2,7 @@ import { RolesGuard } from './../guards/roles.guard';
 import { updateAccountDto } from './dto/updateAccount.dto';
 import { forgotPasswordDTO } from './dto/forgotPassword.dto';
 import { VerifyUser } from './dto/verifyUser.dto';
-import { Body, Controller, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Patch, Post, Request, UseGuards, Get, Param } from '@nestjs/common';
 import { UserService } from './users.service';
 import { sendOtpDTO } from './dto/sendOTP.dto';
 import { changePasswordDTO } from './dto/changePassword.dto';
@@ -28,17 +28,42 @@ export class UserController {
         return this.userService.forgotPassword(info.email, info.otp, info.password);
     }
 
-    @Patch('/change-password/:id')
-    @Roles(Role.user)
+    @Get('/all')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    getAllUser() {
+        return this.userService.getAllUser();
+    }
+
+    @Get('')
+    @Roles()
+    @UseGuards(RolesGuard)
+    getYourInfo(@Request() req) {
+        const userId = req.userId;
+        return this.userService.getYourInfo(userId);
+    }
+
+    @Patch('/change-password')
+    @Roles()
     @UseGuards(RolesGuard)
     changePassword(@Body() info: changePasswordDTO, @Request() req) {
-        return this.userService.changePassword(info.password, info.newPassword);
+        const userId = req.userId;
+        return this.userService.changePassword(userId, info.password, info.newPassword);
     }
 
     @Patch('/update')
-    @Roles(Role.user)
+    @Roles()
     @UseGuards(RolesGuard)
-    updateUser(@Body() info: updateAccountDto) {
-        return this.userService.updateUser(info);
+    updateUser(@Body() info: updateAccountDto, @Request() req) {
+        const userId = req.userId;
+        return this.userService.updateUser(userId, info);
+    }
+
+    @Patch('/grant/:id')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    grantPermission(@Param() params) {
+        const userId = params.id;
+        return this.userService.grantPermission(userId);
     }
 }

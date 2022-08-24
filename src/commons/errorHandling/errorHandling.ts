@@ -14,6 +14,10 @@ export const ERROR = {
         statusCode: 400,
         message: 'Username or password is incorrect',
     },
+    PASSWORD_INCORRECT: {
+        statusCode: 400,
+        message: 'password is incorrect',
+    },
     USERNAME_OR_EMAIL_EXISTED: {
         statusCode: 400,
         message: 'Username or email is exist',
@@ -33,5 +37,9 @@ export const ERROR = {
     ACTIVECODE_IS_WRONG: {
         statusCode: 400,
         message: 'Acitve code is wrong',
+    },
+    USER_IS_ADMIN: {
+        statusCode: 400,
+        message: 'This user is admin',
     },
 };
