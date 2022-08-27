@@ -1,4 +1,3 @@
-import { IsOptional } from 'class-validator';
 import { EntityBase } from 'src/commons/database/baseEntity';
 import { CategoryStatus } from 'src/commons/enum/categorys.enum';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
@@ -11,8 +10,7 @@ export class Category extends EntityBase {
     @Column()
     name: string;
 
-    @Column()
-    @IsOptional()
+    @Column({ default: '' })
     description: string;
 
     @Column({

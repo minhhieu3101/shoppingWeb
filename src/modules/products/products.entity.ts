@@ -1,8 +1,7 @@
 import { Category } from './../categorys/categorys.entity';
-import { IsOptional } from 'class-validator';
 import { EntityBase } from 'src/commons/database/baseEntity';
 import { ProductStatus } from 'src/commons/enum/products.enum';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Product extends EntityBase {
@@ -21,19 +20,16 @@ export class Product extends EntityBase {
     @Column()
     exportPrice: number;
 
-    @Column()
-    @IsOptional()
-    salePrice: string;
+    @Column({ default: 0 })
+    salePrice: number;
 
-    @Column()
-    @IsOptional()
+    @Column({ default: 0 })
     weight: number;
 
     @Column()
     quantityInStock: number;
 
-    @Column()
-    @IsOptional()
+    @Column({ default: '' })
     description: string;
 
     @Column({
@@ -43,6 +39,7 @@ export class Product extends EntityBase {
     })
     status: ProductStatus;
 
-    @OneToOne(() => Category, (category) => category.id)
+    @ManyToOne(() => Category)
+    @JoinColumn({ name: 'id' })
     categoryId: Category;
 }

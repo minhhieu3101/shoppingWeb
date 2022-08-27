@@ -15,6 +15,7 @@ export class databaseConnect implements TypeOrmOptionsFactory {
             database: this.configService.get<string>('DB_DATABASE'),
             entities: [__dirname + '/../**/*.entity{.ts,.js}'],
             synchronize: true,
+            autoLoadEntities: true,
         };
     }
 }

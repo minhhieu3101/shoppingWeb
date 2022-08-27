@@ -1,3 +1,4 @@
+import { ProductsModule } from './modules/products/products.module';
 import { AuthModule } from './modules/auths/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { Module } from '@nestjs/common';
@@ -6,6 +7,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConnect } from './configs/typeorm.config';
 import { ConfigModule } from '@nestjs/config';
+import { CategoryModule } from './modules/categorys/categorys.module';
 
 @Module({
     imports: [
@@ -18,6 +20,8 @@ import { ConfigModule } from '@nestjs/config';
         }),
         UsersModule,
         AuthModule,
+        CategoryModule,
+        ProductsModule,
     ],
     controllers: [AppController],
     providers: [AppService],

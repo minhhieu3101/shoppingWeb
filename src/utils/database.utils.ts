@@ -13,8 +13,20 @@ export class RepositoryUtils<T extends BaseEntity> {
         return this.repository.save(item);
     }
 
+    getByName(name: string): Promise<T> {
+        return this.repository.createQueryBuilder().where({ name: name }).getOne();
+    }
+
     getAll(): Promise<T[]> {
         return this.repository.find({});
+    }
+
+    getAllByCondition(condition: any): Promise<T[]> {
+        return this.repository.find(condition);
+    }
+
+    getAllByConditionByQuery(query: string, params: object): Promise<T[]> {
+        return this.repository.createQueryBuilder().where(query, params).getMany();
     }
 
     getById(id: string): Promise<T> {

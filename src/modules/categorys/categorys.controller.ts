@@ -1,7 +1,70 @@
+import { CategoryStatus } from './../../commons/enum/categorys.enum';
+import { UpdateCategoryDto } from './dto/updateCategory.dto';
 import { CategoryService } from './categorys.service';
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
+import { Roles } from '../guards/roles.decorator';
+import { RolesGuard } from '../guards/roles.guard';
+import { Category } from './categorys.entity';
+import { CreateCategoryDto } from './dto/createCategory.dto';
+import { Role } from 'src/commons/enum/roles.enum';
 
 @Controller('category')
 export class CategoryController {
     constructor(private readonly categoryService: CategoryService) {}
+
+    @Get('/user')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    getAllCategoryForUser(): Promise<Category[]> {
+        return this.categoryService.getAllCategory({ status: CategoryStatus.active });
+    }
+
+    @Get('/user/:id')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    getCategoryForUser(@Param() params): Promise<Category> {
+        return this.categoryService.getCategory({ id: params.id, status: CategoryStatus.active });
+    }
+
+    @Get('/admin')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    getAllCategoryForAdmin(): Promise<Category[]> {
+        return this.categoryService.getAllCategory({});
+    }
+
+    @Get('/admin/:id')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    getCategoryForAdmin(@Param() params): Promise<Category> {
+        return this.categoryService.getCategory({ id: params.id });
+    }
+
+    @Post('/admin')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    createCategory(@Body() category: CreateCategoryDto): Promise<Category> {
+        return this.categoryService.createCategory(category);
+    }
+
+    @Patch('/admin/update/:id')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    updateCategory(@Body() category: UpdateCategoryDto, @Param() params): Promise<Category> {
+        return this.categoryService.updateCategory(params.id, category);
+    }
+
+    @Patch('/admin/inactive/:id')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    inactiveCategory(@Param() params): Promise<Category> {
+        return this.categoryService.changeCategoryStatus(params.id, CategoryStatus.inactive);
+    }
+
+    @Patch('/admin/active/:id')
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    activeCategory(@Param() params): Promise<Category> {
+        return this.categoryService.changeCategoryStatus(params.id, CategoryStatus.active);
+    }
 }
