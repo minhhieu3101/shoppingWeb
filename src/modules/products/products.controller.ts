@@ -1,13 +1,27 @@
 import { Product } from './products.entity';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { ProductsService } from './products.service';
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, Request } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UseGuards,
+    Request,
+    UseInterceptors,
+    UploadedFile,
+} from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
 import { Role } from 'src/commons/enum/roles.enum';
 import { UpdateProductDto } from './dto/updateProduct.dto';
 import { ProductStatus } from 'src/commons/enum/products.enum';
+import { ApiTags } from '@nestjs/swagger/dist';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+@ApiTags('Product')
 @Controller('products')
 export class ProductsController {
     constructor(private readonly productService: ProductsService) {}
@@ -33,13 +47,19 @@ export class ProductsController {
         return this.productService.getAllProduct(req.userRole);
     }
 
+    @Get('/images/:productId')
+    @Roles(Role.user, Role.admin)
+    @UseGuards(RolesGuard)
+    getProductImages(@Param() params) {
+        return this.productService.getAllImageProduct(params.productId);
+    }
+
     @Post('/admin/:categoryId')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
-    createProduct(@Body() product: CreateProductDto, @Param() params) {
-        console.log(typeof product.weight);
-        console.log(params.categoryId);
-        return this.productService.createProduct(params.categoryId, product);
+    @UseInterceptors(FileInterceptor('file'))
+    createProduct(@Body() product: CreateProductDto, @Param() params, @UploadedFile() upload: Express.Multer.File) {
+        return this.productService.createProduct(params.categoryId, product, upload);
     }
 
     @Patch('/admin/update/:id')

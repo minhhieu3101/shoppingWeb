@@ -1,13 +1,27 @@
 import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { UpdateCategoryDto } from './dto/updateCategory.dto';
 import { CategoryService } from './categorys.service';
-import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    UseGuards,
+    Patch,
+    UseInterceptors,
+    ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
 import { Category } from './categorys.entity';
 import { CreateCategoryDto } from './dto/createCategory.dto';
 import { Role } from 'src/commons/enum/roles.enum';
+import { ApiTags } from '@nestjs/swagger/dist';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadedFile } from '@nestjs/common/decorators';
 
+@ApiTags('Category')
 @Controller('category')
 export class CategoryController {
     constructor(private readonly categoryService: CategoryService) {}
@@ -15,6 +29,7 @@ export class CategoryController {
     @Get('/user')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
     getAllCategoryForUser(): Promise<Category[]> {
         return this.categoryService.getAllCategory({ status: CategoryStatus.active });
     }
@@ -22,6 +37,7 @@ export class CategoryController {
     @Get('/user/:id')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
     getCategoryForUser(@Param() params): Promise<Category> {
         return this.categoryService.getCategory({ id: params.id, status: CategoryStatus.active });
     }
@@ -43,8 +59,12 @@ export class CategoryController {
     @Post('/admin')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
-    createCategory(@Body() category: CreateCategoryDto): Promise<Category> {
-        return this.categoryService.createCategory(category);
+    @UseInterceptors(FileInterceptor('banner'))
+    createCategory(
+        @Body() category: CreateCategoryDto,
+        @UploadedFile() upload: Express.Multer.File,
+    ): Promise<Category> {
+        return this.categoryService.createCategory(category, upload);
     }
 
     @Patch('/admin/update/:id')

@@ -5,12 +5,13 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { ERROR } from 'src/commons/errorHandling/errorHandling';
 import { comparePassword, hashPassword } from 'src/utils/encrypt.utils';
 import { Role } from 'src/commons/enum/roles.enum';
+import { UserStatus } from 'src/commons/enum/users.enum';
 
 @Injectable()
 export class UserService {
     constructor(private readonly userRepository: UserRepository, private readonly emailService: SendMailService) {}
 
-    async createUser(user: User): Promise<User> {
+    async createUser(user: any): Promise<User> {
         const userCheck = await this.userRepository.checkUserExist(user.username, user.email);
         if (!userCheck) {
             user.password = await hashPassword(user.password);
@@ -29,8 +30,11 @@ export class UserService {
             throw new UnauthorizedException(ERROR.USERNAME_OR_PASSWORD_INCORRECT);
         }
 
-        if (!user.isActive) {
+        if (user.status === UserStatus.inactive) {
             throw new UnauthorizedException(ERROR.USER_IS_NOT_VERIFIED);
+        }
+        if (user.status === UserStatus.deleted) {
+            throw new NotFoundException(ERROR.USER_IS_DELETED);
         }
         return user;
     }
@@ -43,13 +47,16 @@ export class UserService {
             if (!user) {
                 throw new NotFoundException(ERROR.USER_NOT_FOUND);
             }
-            if (user.isActive) {
+            if (user.status === UserStatus.active) {
                 throw new UnauthorizedException(ERROR.USER_IS_VERIFIED);
+            }
+            if (user.status === UserStatus.deleted) {
+                throw new UnauthorizedException(ERROR.USER_IS_DELETED);
             }
             if (user.activeCode !== otp) {
                 throw new NotFoundException(ERROR.ACTIVECODE_IS_WRONG);
             }
-            user.isActive = true;
+            user.status = UserStatus.active;
             await this.userRepository.save(user);
             return {
                 message: `Verified account ${account} is success `,
@@ -66,6 +73,9 @@ export class UserService {
             });
             if (!user) {
                 throw new NotFoundException(ERROR.USER_NOT_FOUND);
+            }
+            if (user.status === UserStatus.deleted) {
+                throw new NotFoundException(ERROR.USER_IS_DELETED);
             }
 
             user.activeCode = await this.emailService.sendMail(user.email);
@@ -86,13 +96,14 @@ export class UserService {
             if (!user) {
                 throw new NotFoundException(ERROR.USER_NOT_FOUND);
             }
+            if (user.status === UserStatus.deleted) {
+                throw new NotFoundException(ERROR.USER_IS_DELETED);
+            }
 
             if (user.activeCode !== otp) {
                 throw new NotFoundException(ERROR.ACTIVECODE_IS_WRONG);
             }
-            console.log(user.password);
             user.password = await hashPassword(password);
-            console.log(user.password);
             await this.userRepository.save(user);
             return {
                 message: `Change forgot password in account ${email} is success `,
@@ -116,10 +127,14 @@ export class UserService {
             if (!user) {
                 throw new NotFoundException(ERROR.USER_NOT_FOUND);
             }
+            if (user.status === UserStatus.deleted) {
+                throw new NotFoundException(ERROR.USER_IS_DELETED);
+            }
             if (!(user.password === password)) {
                 throw new NotFoundException(ERROR.PASSWORD_INCORRECT);
             }
             user.password = newPassword;
+            user.updatedAt = new Date();
             await this.userRepository.save(user);
             return {
                 message: `Change password in account is success `,
@@ -142,14 +157,40 @@ export class UserService {
             if (!user) {
                 throw new NotFoundException(ERROR.USER_NOT_FOUND);
             }
+            if (user.status === UserStatus.deleted) {
+                throw new NotFoundException(ERROR.USER_IS_DELETED);
+            }
             if (user.role === Role.admin) {
                 throw new UnauthorizedException(ERROR.USER_IS_ADMIN);
             }
-
             user.role = Role.admin;
+            user.updatedAt = new Date();
             await this.userRepository.save(user);
             return {
                 message: `Grant permission is success `,
+            };
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async deleteUser(id: string) {
+        try {
+            const user = await this.userRepository.getById(id);
+            if (!user) {
+                throw new NotFoundException(ERROR.USER_NOT_FOUND);
+            }
+            if (user.role === Role.admin) {
+                throw new UnauthorizedException(ERROR.USER_IS_ADMIN);
+            }
+            if (user.status === UserStatus.deleted) {
+                throw new UnauthorizedException(ERROR.USER_IS_DELETED);
+            }
+            user.status = UserStatus.deleted;
+            user.updatedAt = new Date();
+            await this.userRepository.save(user);
+            return {
+                message: `Deleted user is success `,
             };
         } catch (err) {
             throw err;

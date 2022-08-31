@@ -1,3 +1,4 @@
+import { CloudinaryService } from './../cloudinary/cloudinary.service';
 import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { ERROR } from 'src/commons/errorHandling/errorHandling';
 import { Category } from './categorys.entity';
@@ -6,7 +7,10 @@ import { Injectable, NotFoundException, UnauthorizedException, HttpException, Ht
 
 @Injectable()
 export class CategoryService {
-    constructor(private readonly categoryRepository: CategoryRepository) {}
+    constructor(
+        private readonly categoryRepository: CategoryRepository,
+        private cloudinaryService: CloudinaryService,
+    ) {}
 
     async getAllCategory(condition: any): Promise<Category[]> {
         try {
@@ -32,12 +36,20 @@ export class CategoryService {
         }
     }
 
-    async createCategory(info: any): Promise<Category> {
+    async createCategory(info: any, upload: Express.Multer.File): Promise<Category> {
         const categoryName = info.name;
         try {
             await this.categoryRepository.getByName(categoryName);
+            console.log('sap upload file');
+
+            const file = await this.cloudinaryService.uploadImageToCloudinary(upload);
+            console.log(file);
+
+            info.banner = file.url;
             return await this.categoryRepository.save(info);
         } catch (err) {
+            console.log(err);
+
             throw new UnauthorizedException(ERROR.CATEGORY_IS_EXIST);
         }
     }
@@ -51,6 +63,7 @@ export class CategoryService {
             if (info.name && (await this.categoryRepository.getByName(info.name))) {
                 throw new UnauthorizedException(ERROR.CATEGORY_IS_EXIST);
             }
+            info.updatedAt = new Date();
             return await this.categoryRepository.update(id, info);
         } catch (err) {
             throw new NotFoundException(ERROR.CATEGORY_NOT_FOUND);
@@ -64,6 +77,7 @@ export class CategoryService {
                 throw new HttpException(`This category is ${status} already`, HttpStatus.BAD_REQUEST);
             }
             category.status = status;
+            category.updatedAt = new Date();
             await this.categoryRepository.save(category);
             return {
                 message: `This category status is changed to ${status} now`,

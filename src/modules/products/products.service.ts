@@ -1,3 +1,5 @@
+import { Picture } from './../pictures/pictures.entity';
+import { PicturesService } from './../pictures/pictures.service';
 import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { ProductStatus } from './../../commons/enum/products.enum';
 import { Role } from './../../commons/enum/roles.enum';
@@ -13,9 +15,10 @@ export class ProductsService {
     constructor(
         private readonly productRepository: ProductRepository,
         private readonly categoryService: CategoryService,
+        private readonly pictureService: PicturesService,
     ) {}
 
-    async createProduct(categoryId: string, productInfo: any): Promise<Product> {
+    async createProduct(categoryId: string, productInfo: any, upload: Express.Multer.File): Promise<Product> {
         try {
             const checkCategoryActive = this.categoryService.checkCategoryActive(categoryId);
             if (!checkCategoryActive) {
@@ -37,8 +40,12 @@ export class ProductsService {
                 throw new HttpException('Not found this category', HttpStatus.BAD_REQUEST);
             }
             productInfo.categoryId = category;
-            return await this.productRepository.save(productInfo);
+            const product = await this.productRepository.save(productInfo);
+            await this.pictureService.createPicture(upload, product);
+            return product;
         } catch (err) {
+            console.log(err);
+
             throw err;
         }
     }
@@ -99,9 +106,18 @@ export class ProductsService {
         }
     }
 
+    async getAllImageProduct(productId: string): Promise<Picture[]> {
+        try {
+            return await this.pictureService.getPicture(productId);
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async updateProduct(id: string, productInfo: any): Promise<Product> {
         try {
             await this.productRepository.getByName(productInfo.name);
+            productInfo.updatedAt = new Date();
             return await this.productRepository.update(id, productInfo);
         } catch (err) {
             throw new HttpException('This product name is existed', HttpStatus.BAD_REQUEST);
@@ -115,6 +131,7 @@ export class ProductsService {
                 throw new HttpException(`This product is ${status} already`, HttpStatus.BAD_REQUEST);
             }
             product.status = status;
+            product.updatedAt = new Date();
             await product.save();
             return {
                 message: `this product status is changed to ${status} `,

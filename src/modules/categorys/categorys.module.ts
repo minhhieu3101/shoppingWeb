@@ -1,3 +1,4 @@
+import { CloudinaryModule } from './../cloudinary/cloudinary.module';
 import { cacheModule } from './../cache/cache.module';
 import { jwtModule } from './../jwts/jwts.module';
 import { CategoryRepository } from './categorys.repository';
@@ -8,7 +9,7 @@ import { CategoryService } from './categorys.service';
 import { Module } from '@nestjs/common';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Category]), jwtModule, cacheModule],
+    imports: [TypeOrmModule.forFeature([Category]), jwtModule, cacheModule, CloudinaryModule],
     providers: [CategoryService, CategoryRepository],
     controllers: [CategoryController],
     exports: [CategoryService],

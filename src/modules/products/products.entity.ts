@@ -2,6 +2,7 @@ import { Category } from './../categorys/categorys.entity';
 import { EntityBase } from 'src/commons/database/baseEntity';
 import { ProductStatus } from 'src/commons/enum/products.enum';
 import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Product extends EntityBase {
@@ -12,9 +13,11 @@ export class Product extends EntityBase {
     name: string;
 
     @Column()
+    @Exclude()
     barcode: string;
 
     @Column()
+    @Exclude()
     importPrice: number;
 
     @Column()
@@ -27,11 +30,14 @@ export class Product extends EntityBase {
     weight: number;
 
     @Column()
+    @Exclude()
     quantityInStock: number;
 
     @Column({ default: '' })
+    @Exclude()
     description: string;
 
+    @Exclude()
     @Column({
         type: 'enum',
         enum: ProductStatus,
@@ -40,6 +46,6 @@ export class Product extends EntityBase {
     status: ProductStatus;
 
     @ManyToOne(() => Category)
-    @JoinColumn({ name: 'id' })
+    @JoinColumn({ name: 'fkCategoryId' })
     categoryId: Category;
 }

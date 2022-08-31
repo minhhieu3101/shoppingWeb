@@ -22,7 +22,10 @@ export class RolesGuard implements CanActivate {
         request.userId = userId.id;
         request.userRole = userRole;
         if (roles.length > 0 && !roles.includes(userRole as Role)) {
-            throw new HttpException(`you are ${userRole}`, HttpStatus.NOT_ACCEPTABLE);
+            throw new HttpException(
+                `you are ${userRole} . You do not have permission to do this activity`,
+                HttpStatus.NOT_ACCEPTABLE,
+            );
         }
         return true;
     }

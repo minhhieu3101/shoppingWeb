@@ -1,3 +1,4 @@
+import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
 import { AuthModule } from './modules/auths/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -8,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConnect } from './configs/typeorm.config';
 import { ConfigModule } from '@nestjs/config';
 import { CategoryModule } from './modules/categorys/categorys.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 @Module({
     imports: [
@@ -22,6 +25,10 @@ import { CategoryModule } from './modules/categorys/categorys.module';
         AuthModule,
         CategoryModule,
         ProductsModule,
+        OrdersModule,
+        MulterModule.register({
+            storage: memoryStorage(),
+        }),
     ],
     controllers: [AppController],
     providers: [AppService],

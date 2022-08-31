@@ -13,7 +13,7 @@ export class AuthService {
         private cacheService: CacheService,
         private readonly configService: ConfigService,
     ) {}
-    async register(user: User): Promise<User> {
+    async register(user: any): Promise<User> {
         try {
             return await this.userService.createUser(user);
         } catch (err) {

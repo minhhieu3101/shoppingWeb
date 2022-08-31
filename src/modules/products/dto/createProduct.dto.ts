@@ -1,5 +1,5 @@
 import { ProductStatus } from './../../../commons/enum/products.enum';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumberString, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductDto {
     @IsString()
@@ -10,25 +10,21 @@ export class CreateProductDto {
     @IsNotEmpty()
     barcode: string;
 
-    @IsNumber()
+    @IsNumberString()
     @IsNotEmpty()
-    @Min(0)
-    importPrice: number;
+    importPrice: string;
 
-    @IsNumber()
+    @IsNumberString()
     @IsNotEmpty()
-    @Min(0)
-    exportPrice: number;
+    exportPrice: string;
 
-    @IsNumber()
-    @Min(0)
+    @IsNumberString()
     @IsOptional()
-    weight: number;
+    weight: string;
 
-    @IsNumber()
+    @IsNumberString()
     @IsNotEmpty()
-    @Min(0)
-    quantityInStock: number;
+    quantityInStock: string;
 
     @IsString()
     @IsOptional()

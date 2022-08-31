@@ -26,6 +26,10 @@ export const ERROR = {
         statusCode: 409,
         message: 'User found',
     },
+    USER_IS_DELETED: {
+        statusCode: 400,
+        message: 'User has been deleted',
+    },
     USER_IS_VERIFIED: {
         statusCode: 400,
         message: 'This account is verify',

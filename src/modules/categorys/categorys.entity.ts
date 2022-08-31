@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { EntityBase } from 'src/commons/database/baseEntity';
 import { CategoryStatus } from 'src/commons/enum/categorys.enum';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
@@ -13,6 +14,10 @@ export class Category extends EntityBase {
     @Column({ default: '' })
     description: string;
 
+    @Column({ default: '' })
+    banner: string;
+
+    @Exclude()
     @Column({
         type: 'enum',
         enum: CategoryStatus,

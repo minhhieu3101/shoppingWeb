@@ -1,6 +1,7 @@
 // nơi code các câu lệnh chung với DB ( CRUD )
-import { BaseEntity, DeepPartial } from 'typeorm';
+import { BaseEntity, DeepPartial, InsertResult } from 'typeorm';
 import { Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export class RepositoryUtils<T extends BaseEntity> {
     protected readonly repository: Repository<T>;
@@ -11,6 +12,10 @@ export class RepositoryUtils<T extends BaseEntity> {
     // create data T to repo or update data
     save(item: DeepPartial<T>): Promise<T> {
         return this.repository.save(item);
+    }
+
+    create(item: QueryDeepPartialEntity<T>): Promise<InsertResult> {
+        return this.repository.insert(item);
     }
 
     getByName(name: string): Promise<T> {
