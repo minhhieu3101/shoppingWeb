@@ -40,11 +40,7 @@ export class CategoryService {
         const categoryName = info.name;
         try {
             await this.categoryRepository.getByName(categoryName);
-            console.log('sap upload file');
-
             const file = await this.cloudinaryService.uploadImageToCloudinary(upload);
-            console.log(file);
-
             info.banner = file.url;
             return await this.categoryRepository.save(info);
         } catch (err) {

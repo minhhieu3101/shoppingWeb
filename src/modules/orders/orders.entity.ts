@@ -28,7 +28,7 @@ export class Order extends EntityBase {
     status: OrderStatus;
 
     @ManyToOne(() => User)
-    @JoinColumn({ name: 'id' })
+    @JoinColumn({ name: 'user_id' })
     @Exclude()
     userId: User;
 }

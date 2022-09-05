@@ -17,16 +17,17 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Category } from './categorys.entity';
 import { CreateCategoryDto } from './dto/createCategory.dto';
 import { Role } from 'src/commons/enum/roles.enum';
-import { ApiTags } from '@nestjs/swagger/dist';
+import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger/dist';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadedFile } from '@nestjs/common/decorators';
 
 @ApiTags('Category')
-@Controller('category')
+@ApiBearerAuth()
+@Controller('')
 export class CategoryController {
     constructor(private readonly categoryService: CategoryService) {}
 
-    @Get('/user')
+    @Get('/user/category')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
@@ -34,32 +35,39 @@ export class CategoryController {
         return this.categoryService.getAllCategory({ status: CategoryStatus.active });
     }
 
-    @Get('/user/:id')
+    @Get('/user/category/:id')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
+    @ApiParam({
+        name: 'id',
+    })
     @UseInterceptors(ClassSerializerInterceptor)
     getCategoryForUser(@Param() params): Promise<Category> {
         return this.categoryService.getCategory({ id: params.id, status: CategoryStatus.active });
     }
 
-    @Get('/admin')
+    @Get('/admin/category')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     getAllCategoryForAdmin(): Promise<Category[]> {
         return this.categoryService.getAllCategory({});
     }
 
-    @Get('/admin/:id')
+    @Get('/admin/category/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiParam({
+        name: 'id',
+    })
     getCategoryForAdmin(@Param() params): Promise<Category> {
         return this.categoryService.getCategory({ id: params.id });
     }
 
-    @Post('/admin')
+    @Post('/admin/category')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @UseInterceptors(FileInterceptor('banner'))
+    @ApiConsumes('multipart/form-data')
     createCategory(
         @Body() category: CreateCategoryDto,
         @UploadedFile() upload: Express.Multer.File,
@@ -67,23 +75,32 @@ export class CategoryController {
         return this.categoryService.createCategory(category, upload);
     }
 
-    @Patch('/admin/update/:id')
+    @Patch('/admin/category/update/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiParam({
+        name: 'id',
+    })
     updateCategory(@Body() category: UpdateCategoryDto, @Param() params): Promise<Category> {
         return this.categoryService.updateCategory(params.id, category);
     }
 
-    @Patch('/admin/inactive/:id')
+    @Patch('/admin/category/inactive/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiParam({
+        name: 'id',
+    })
     inactiveCategory(@Param() params): Promise<Category> {
         return this.categoryService.changeCategoryStatus(params.id, CategoryStatus.inactive);
     }
 
-    @Patch('/admin/active/:id')
+    @Patch('/admin/category/active/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiParam({
+        name: 'id',
+    })
     activeCategory(@Param() params): Promise<Category> {
         return this.categoryService.changeCategoryStatus(params.id, CategoryStatus.active);
     }

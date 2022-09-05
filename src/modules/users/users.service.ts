@@ -13,7 +13,7 @@ export class UserService {
 
     async createUser(user: any): Promise<User> {
         const userCheck = await this.userRepository.checkUserExist(user.username, user.email);
-        if (!userCheck) {
+        if (!userCheck || userCheck.status === UserStatus.deleted) {
             user.password = await hashPassword(user.password);
             user.activeCode = await this.emailService.sendMail(user.email);
             console.log(user.activeCode);

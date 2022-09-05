@@ -20,71 +20,83 @@ import { sendOtpDTO } from './dto/sendOTP.dto';
 import { changePasswordDTO } from './dto/changePassword.dto';
 import { Roles } from '../guards/roles.decorator';
 import { Role } from 'src/commons/enum/roles.enum';
-import { ApiTags } from '@nestjs/swagger/dist';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger/dist';
 
 @ApiTags('User')
-@Controller('user')
+@Controller('')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Post('/verify')
+    @Post('/user/verify')
     verifyAccount(@Body() info: VerifyUser) {
         return this.userService.verifyUser(info.account, info.otp);
     }
 
-    @Post('/sendOTP')
+    @Post('/user/sendOTP')
     sendOTP(@Body() info: sendOtpDTO) {
         return this.userService.sendOTP(info.email);
     }
 
-    @Patch('/forgot-password')
+    @Patch('/user/forgot-password')
     forgotPassword(@Body() info: forgotPasswordDTO) {
         return this.userService.forgotPassword(info.email, info.otp, info.password);
     }
 
-    @Get('/all')
+    @Get('admin/user')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiBearerAuth()
     getAllUser() {
         return this.userService.getAllUser();
     }
 
-    @Get('')
+    @Get('/user')
     @Roles()
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
+    @ApiBearerAuth()
     getYourInfo(@Request() req) {
         const userId = req.userId;
         return this.userService.getYourInfo(userId);
     }
 
-    @Patch('/change-password')
+    @Patch('/user/change-password')
     @Roles()
     @UseGuards(RolesGuard)
+    @ApiBearerAuth()
     changePassword(@Body() info: changePasswordDTO, @Request() req) {
         const userId = req.userId;
         return this.userService.changePassword(userId, info.password, info.newPassword);
     }
 
-    @Patch('/update')
+    @Patch('/user/update')
     @Roles()
     @UseGuards(RolesGuard)
+    @ApiBearerAuth()
     updateUser(@Body() info: updateAccountDto, @Request() req) {
         const userId = req.userId;
         return this.userService.updateUser(userId, info);
     }
 
-    @Patch('/grant/:id')
+    @Patch('/admin/user/grant/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiParam({
+        name: 'id',
+    })
+    @ApiBearerAuth()
     grantPermission(@Param() params) {
         const userId = params.id;
         return this.userService.grantPermission(userId);
     }
 
-    @Delete('/:id')
+    @Delete('/admin/user/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiBearerAuth()
+    @ApiParam({
+        name: 'id',
+    })
     deleteUser(@Param() params) {
         const userId = params.id;
         return this.userService.deleteUser(userId);

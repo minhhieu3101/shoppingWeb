@@ -10,7 +10,7 @@ export class PicturesService {
     async createPicture(file: Express.Multer.File, product: Product) {
         const upload = await this.cloudinaryService.uploadImageToCloudinary(file);
         const url = upload.url as string;
-        return await this.pictureRepo.save({ url: url, productId: product });
+        return this.pictureRepo.save({ url: url, productId: product });
     }
 
     getPicture(productId: string) {

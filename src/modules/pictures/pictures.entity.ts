@@ -11,6 +11,6 @@ export class Picture extends EntityBase {
     url: string;
 
     @ManyToOne(() => Product)
-    @JoinColumn({ name: 'id' })
+    @JoinColumn({ name: 'productId' })
     productId: Product;
 }

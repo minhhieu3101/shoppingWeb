@@ -18,8 +18,9 @@ export class ProductsService {
         private readonly pictureService: PicturesService,
     ) {}
 
-    async createProduct(categoryId: string, productInfo: any, upload: Express.Multer.File): Promise<Product> {
+    async createProduct(productInfo: any, files: Express.Multer.File[]): Promise<Product> {
         try {
+            const categoryId = productInfo.categoryId;
             const checkCategoryActive = this.categoryService.checkCategoryActive(categoryId);
             if (!checkCategoryActive) {
                 throw new UnauthorizedException(ERROR.CATEGORY_IS_INACTIVE);
@@ -40,8 +41,13 @@ export class ProductsService {
                 throw new HttpException('Not found this category', HttpStatus.BAD_REQUEST);
             }
             productInfo.categoryId = category;
+            if (productInfo.quantityInStock === '0') {
+                productInfo.status = ProductStatus.outOfStock;
+            }
             const product = await this.productRepository.save(productInfo);
-            await this.pictureService.createPicture(upload, product);
+            for (let i = 0; i < files.length; i++) {
+                await this.pictureService.createPicture(files[i], product);
+            }
             return product;
         } catch (err) {
             console.log(err);

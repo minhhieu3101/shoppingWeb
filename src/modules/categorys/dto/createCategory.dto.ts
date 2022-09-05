@@ -1,5 +1,4 @@
-import { CategoryStatus } from 'src/commons/enum/categorys.enum';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
@@ -13,13 +12,6 @@ export class CreateCategoryDto {
     @IsOptional()
     description: string;
 
-    @ApiProperty()
-    @IsString()
-    @IsOptional()
-    banner: string;
-
-    @ApiProperty()
-    @IsEnum(CategoryStatus)
-    @IsOptional()
-    status: CategoryStatus;
+    @ApiProperty({ type: 'string', format: 'binary' })
+    banner: 'img';
 }

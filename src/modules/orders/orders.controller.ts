@@ -11,22 +11,56 @@ import {
     UseInterceptors,
     ClassSerializerInterceptor,
     Get,
+    Delete,
+    Param,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { CreateOrderDto } from './dto/createOrder.dto';
 
-@Controller('orders')
+@ApiTags('Orders')
+@ApiBearerAuth()
+@Controller('')
 export class OrdersController {
     constructor(private readonly orderService: OrdersService) {}
 
-    @Post('')
+    @Post('/orders')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
-    createOrder(@Body() order, @Request() req) {
-        order.userId = req.userId;
-        return this.orderService.createOrder(order);
+    @ApiBody({
+        schema: {
+            type: 'object',
+            required: ['address', 'productArray'],
+            properties: {
+                address: {
+                    type: 'string',
+                },
+                description: {
+                    type: 'string',
+                },
+                productArray: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        required: ['productId', 'quantity'],
+                        properties: {
+                            productId: {
+                                type: 'string',
+                            },
+                            quantity: {
+                                type: 'number',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    })
+    createOrder(@Body() order: CreateOrderDto, @Request() req) {
+        return this.orderService.createOrder(order, req.userId);
     }
 
-    @Get('')
+    @Get('/orders')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
@@ -34,11 +68,29 @@ export class OrdersController {
         return this.orderService.getYourOrder(req.userId);
     }
 
-    @Get('admin')
+    @Get('admin/orders')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
     getAllOrder() {
         return this.orderService.getAllOrder();
+    }
+
+    @Delete('user/orders/orderProduct/:orderProductId')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
+    @ApiParam({ name: 'orderProductId' })
+    deleteOrderProduct(@Param() params) {
+        return this.orderService.deleteOrderProduct(params.orderProductId);
+    }
+
+    @Delete('user/orders/:orderId')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
+    @ApiParam({ name: 'orderId' })
+    deleteOrder(@Param() params) {
+        return this.orderService.deleteOrder(params.orderId);
     }
 }

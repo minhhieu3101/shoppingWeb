@@ -1,3 +1,4 @@
+import { OrderStatus } from './../../commons/enum/orders.enum';
 import { ERROR } from 'src/commons/errorHandling/errorHandling';
 import { ProductRepository } from './../products/products.repository';
 import { Order } from './../orders/orders.entity';
@@ -42,14 +43,56 @@ export class OrderProductService {
         const product = await this.productRepo.getByCondition({
             where: { id: productId, status: ProductStatus.active },
         });
+        if (!product) {
+            return false;
+        }
         return quantity < product.quantityInStock ? true : false;
     }
 
-    getOrderProduct(orderId: string): Promise<OrderProduct[]> {
-        return this.orderProductRepo.getOrderProduct(orderId);
+    countOrderProduct(orderId) {
+        return this.orderProductRepo.count({
+            where: {
+                orderId: {
+                    id: orderId,
+                },
+                status: OrderStatus.active,
+            },
+        });
+    }
+
+    getOrderProduct(orderId: string, status?: OrderStatus): Promise<OrderProduct[]> {
+        return this.orderProductRepo.getAllByCondition({
+            where: {
+                orderId: {
+                    id: orderId,
+                    status: status,
+                },
+                status: status,
+            },
+            relations: { productId: true },
+        });
     }
 
     getAllOrderProduct(): Promise<OrderProduct[]> {
-        return this.orderProductRepo.getAllOrderProduct();
+        return this.orderProductRepo.getAllByCondition({
+            relations: { productId: true, orderId: true },
+        });
+    }
+
+    async deteteOrderProduct(id: string): Promise<OrderProduct> {
+        try {
+            const orderProduct = await this.orderProductRepo.getByCondition({
+                where: {
+                    id: id,
+                    status: OrderStatus.active,
+                },
+                relations: { orderId: true },
+            });
+            orderProduct.status = OrderStatus.inactive;
+            await orderProduct.save();
+            return orderProduct;
+        } catch (err) {
+            throw err;
+        }
     }
 }

@@ -16,11 +16,11 @@ export class Product extends EntityBase {
     @Exclude()
     barcode: string;
 
-    @Column()
+    @Column({ default: 0 })
     @Exclude()
     importPrice: number;
 
-    @Column()
+    @Column({ default: 0 })
     exportPrice: number;
 
     @Column({ default: 0 })
@@ -29,7 +29,7 @@ export class Product extends EntityBase {
     @Column({ default: 0 })
     weight: number;
 
-    @Column()
+    @Column({ default: 0 })
     @Exclude()
     quantityInStock: number;
 

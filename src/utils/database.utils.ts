@@ -14,8 +14,16 @@ export class RepositoryUtils<T extends BaseEntity> {
         return this.repository.save(item);
     }
 
-    create(item: QueryDeepPartialEntity<T>): Promise<InsertResult> {
+    async create(item: DeepPartial<T>): Promise<T> {
+        return this.repository.create(item);
+    }
+
+    insert(item: QueryDeepPartialEntity<T>): Promise<InsertResult> {
         return this.repository.insert(item);
+    }
+
+    async count(condition: any): Promise<number> {
+        return await this.repository.count(condition);
     }
 
     getByName(name: string): Promise<T> {

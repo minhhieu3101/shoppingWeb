@@ -9,6 +9,7 @@ async function bootstrap() {
     app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
     app.useGlobalPipes(new ValidationPipe());
     const config = new DocumentBuilder()
+        .addBearerAuth()
         .setTitle('Shopping Web')
         .setDescription('The shoppingWeb API description')
         .setVersion('1.0')

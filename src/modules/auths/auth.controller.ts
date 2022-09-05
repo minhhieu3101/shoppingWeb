@@ -1,3 +1,4 @@
+import { getNewTokenDto } from './dto/getNewToken.dto';
 import { LoginDto } from './dto/login.dto';
 import { Body, ClassSerializerInterceptor, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { User } from './../users/users.entity';
@@ -24,7 +25,7 @@ export class AuthController {
     }
 
     @Post('getToken')
-    getNewToken(@Body() refreshToken: any): Promise<any> {
+    getNewToken(@Body() refreshToken: getNewTokenDto): Promise<any> {
         return this.authService.getNewToken(refreshToken.refreshToken);
     }
 }
