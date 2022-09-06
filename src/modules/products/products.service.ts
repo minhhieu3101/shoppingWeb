@@ -8,15 +8,17 @@ import { CategoryService } from './../categorys/categorys.service';
 import { Injectable, NotFoundException, HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { Product } from './products.entity';
 import { ProductRepository } from './products.repository';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Not } from 'typeorm';
-
 @Injectable()
 export class ProductsService {
     constructor(
         private readonly productRepository: ProductRepository,
         private readonly categoryService: CategoryService,
         private readonly pictureService: PicturesService,
-    ) {}
+    ) {
+        this.productRepository = productRepository;
+    }
 
     async createProduct(productInfo: any, files: Express.Multer.File[]): Promise<Product> {
         try {
@@ -56,6 +58,25 @@ export class ProductsService {
         }
     }
 
+    async getAllProduct(options: IPaginationOptions, role: Role): Promise<Pagination<Product>> {
+        try {
+            if (role === Role.admin) {
+                return await this.productRepository.paginate(options);
+            }
+            const queryBuilder = this.productRepository
+                .getRepository()
+                .createQueryBuilder('p')
+                .leftJoinAndSelect('p.categoryId', 'cate')
+                .where('cate.status = :active AND p.status != :unavailable', {
+                    active: CategoryStatus.active,
+                    unavailable: ProductStatus.unavailable,
+                });
+            return await this.productRepository.paginate(options, queryBuilder);
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async getProductById(id: string, role: Role): Promise<Product> {
         try {
             if (role === Role.admin) {
@@ -75,46 +96,41 @@ export class ProductsService {
         }
     }
 
-    async getAllProductByCategory(categoryId: string, role: Role): Promise<Product[]> {
+    async getAllProductByCategory(
+        options: IPaginationOptions,
+        categoryId: string,
+        role: Role,
+    ): Promise<Pagination<Product>> {
         try {
             if (role === Role.admin) {
-                return await this.productRepository.getAllByCondition({ where: { categoryId: categoryId } });
-            }
-            return await this.productRepository.getAllByCondition({
-                where: {
-                    categoryId: {
+                const queryBuilder = this.productRepository
+                    .getRepository()
+                    .createQueryBuilder('p')
+                    .leftJoinAndSelect('p.categoryId', 'cate')
+                    .where('cate.id = :id', {
                         id: categoryId,
-                        status: CategoryStatus.active,
-                    },
-                    status: Not(ProductStatus.unavailable),
-                },
-            });
-        } catch (err) {
-            throw err;
-        }
-    }
-
-    async getAllProduct(role: Role): Promise<Product[]> {
-        try {
-            if (role === Role.admin) {
-                return await this.productRepository.getAll();
+                    });
+                return await this.productRepository.paginate(options, queryBuilder);
             }
-            return await this.productRepository.getAllByCondition({
-                where: {
-                    categoryId: {
-                        status: CategoryStatus.active,
-                    },
-                    status: Not(ProductStatus.unavailable),
-                },
-            });
+
+            const queryBuilder = this.productRepository
+                .getRepository()
+                .createQueryBuilder('p')
+                .leftJoinAndSelect('p.categoryId', 'cate')
+                .where('cate.status = :active AND p.status != :unavailable AND cate.id = :id', {
+                    active: CategoryStatus.active,
+                    unavailable: ProductStatus.unavailable,
+                    id: categoryId,
+                });
+            return await this.productRepository.paginate(options, queryBuilder);
         } catch (err) {
             throw err;
         }
     }
 
-    async getAllImageProduct(productId: string): Promise<Picture[]> {
+    async getImageProduct(options: IPaginationOptions, productId: string): Promise<Pagination<Picture>> {
         try {
-            return await this.pictureService.getPicture(productId);
+            return await this.pictureService.getPicture(options, productId);
         } catch (err) {
             throw err;
         }

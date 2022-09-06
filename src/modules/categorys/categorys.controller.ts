@@ -11,6 +11,9 @@ import {
     Patch,
     UseInterceptors,
     ClassSerializerInterceptor,
+    DefaultValuePipe,
+    ParseIntPipe,
+    Request,
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
@@ -19,7 +22,8 @@ import { CreateCategoryDto } from './dto/createCategory.dto';
 import { Role } from 'src/commons/enum/roles.enum';
 import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger/dist';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadedFile } from '@nestjs/common/decorators';
+import { Query, UploadedFile } from '@nestjs/common/decorators';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @ApiTags('Category')
 @ApiBearerAuth()
@@ -31,8 +35,20 @@ export class CategoryController {
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
-    getAllCategoryForUser(): Promise<Category[]> {
-        return this.categoryService.getAllCategory({ status: CategoryStatus.active });
+    getAllCategoryForUser(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Request() request,
+    ): Promise<Pagination<Category>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.categoryService.getAllCategory(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/user/category',
+            },
+            request.userRole,
+        );
     }
 
     @Get('/user/category/:id')
@@ -49,8 +65,20 @@ export class CategoryController {
     @Get('/admin/category')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
-    getAllCategoryForAdmin(): Promise<Category[]> {
-        return this.categoryService.getAllCategory({});
+    getAllCategoryForAdmin(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Request() request,
+    ): Promise<Pagination<Category>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.categoryService.getAllCategory(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/admin/category',
+            },
+            request.userRole,
+        );
     }
 
     @Get('/admin/category/:id')

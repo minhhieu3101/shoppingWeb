@@ -4,6 +4,8 @@ import { ERROR } from 'src/commons/errorHandling/errorHandling';
 import { Category } from './categorys.entity';
 import { CategoryRepository } from './categorys.repository';
 import { Injectable, NotFoundException, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
+import { Role } from 'src/commons/enum/roles.enum';
 
 @Injectable()
 export class CategoryService {
@@ -12,11 +14,20 @@ export class CategoryService {
         private cloudinaryService: CloudinaryService,
     ) {}
 
-    async getAllCategory(condition: any): Promise<Category[]> {
+    async getAllCategory(options: IPaginationOptions, role: Role): Promise<Pagination<Category>> {
         try {
-            return await this.categoryRepository.getAllByCondition({ where: condition });
+            if (role === Role.admin) {
+                return await this.categoryRepository.paginate(options);
+            }
+            const queryBuilder = this.categoryRepository
+                .getRepository()
+                .createQueryBuilder('c')
+                .where('c.status = :active', {
+                    active: CategoryStatus.active,
+                });
+            return await this.categoryRepository.paginate(options, queryBuilder);
         } catch (err) {
-            throw new NotFoundException(ERROR.CATEGORY_NOT_FOUND);
+            throw err;
         }
     }
 

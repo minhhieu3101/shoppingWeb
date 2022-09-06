@@ -1,3 +1,4 @@
+import { User } from './users.entity';
 import { RolesGuard } from './../guards/roles.guard';
 import { updateAccountDto } from './dto/updateAccount.dto';
 import { forgotPasswordDTO } from './dto/forgotPassword.dto';
@@ -14,6 +15,9 @@ import {
     UseInterceptors,
     ClassSerializerInterceptor,
     Delete,
+    Query,
+    ParseIntPipe,
+    DefaultValuePipe,
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { sendOtpDTO } from './dto/sendOTP.dto';
@@ -21,6 +25,7 @@ import { changePasswordDTO } from './dto/changePassword.dto';
 import { Roles } from '../guards/roles.decorator';
 import { Role } from 'src/commons/enum/roles.enum';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger/dist';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @ApiTags('User')
 @Controller('')
@@ -46,8 +51,16 @@ export class UserController {
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiBearerAuth()
-    getAllUser() {
-        return this.userService.getAllUser();
+    getAllUser(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+    ): Promise<Pagination<User>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.userService.getAllUser({
+            page,
+            limit,
+            route: 'http://localhost:3000/admin/user',
+        });
     }
 
     @Get('/user')

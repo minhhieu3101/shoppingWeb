@@ -6,6 +6,7 @@ import { ERROR } from 'src/commons/errorHandling/errorHandling';
 import { comparePassword, hashPassword } from 'src/utils/encrypt.utils';
 import { Role } from 'src/commons/enum/roles.enum';
 import { UserStatus } from 'src/commons/enum/users.enum';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UserService {
@@ -113,8 +114,12 @@ export class UserService {
         }
     }
 
-    async getAllUser(): Promise<User[]> {
-        return await this.userRepository.getAll();
+    async getAllUser(options: IPaginationOptions): Promise<Pagination<User>> {
+        try {
+            return await this.userRepository.paginate(options);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async getYourInfo(id: string): Promise<User> {

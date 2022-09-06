@@ -1,12 +1,16 @@
 // nơi code các câu lệnh chung với DB ( CRUD )
-import { BaseEntity, DeepPartial, InsertResult } from 'typeorm';
+import { BaseEntity, DeepPartial, SelectQueryBuilder } from 'typeorm';
 import { Repository } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { paginate, Pagination, IPaginationOptions } from 'nestjs-typeorm-paginate';
 
 export class RepositoryUtils<T extends BaseEntity> {
     protected readonly repository: Repository<T>;
-    constructor(private _repository: Repository<T>) {
+    constructor(protected _repository: Repository<T>) {
         this.repository = _repository;
+    }
+
+    getRepository(): Repository<T> {
+        return this.repository;
     }
 
     // create data T to repo or update data
@@ -14,12 +18,13 @@ export class RepositoryUtils<T extends BaseEntity> {
         return this.repository.save(item);
     }
 
-    async create(item: DeepPartial<T>): Promise<T> {
-        return this.repository.create(item);
+    paginate(options: IPaginationOptions, queryBuilder?: SelectQueryBuilder<T>): Promise<Pagination<T>> {
+        const query = queryBuilder ? queryBuilder : this.repository.createQueryBuilder();
+        return paginate<T>(query, options);
     }
 
-    insert(item: QueryDeepPartialEntity<T>): Promise<InsertResult> {
-        return this.repository.insert(item);
+    async create(item: DeepPartial<T>): Promise<T> {
+        return this.repository.create(item);
     }
 
     async count(condition: any): Promise<number> {
@@ -36,10 +41,6 @@ export class RepositoryUtils<T extends BaseEntity> {
 
     getAllByCondition(condition: any): Promise<T[]> {
         return this.repository.find(condition);
-    }
-
-    getAllByConditionByQuery(query: string, params: object): Promise<T[]> {
-        return this.repository.createQueryBuilder().where(query, params).getMany();
     }
 
     getById(id: string): Promise<T> {

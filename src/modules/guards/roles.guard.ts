@@ -11,11 +11,8 @@ export class RolesGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const roles = this.reflector.get<Role[]>('roles', context.getHandler());
         const request = context.switchToHttp().getRequest();
-        const token = request.headers.authorization.replace('Bearer ', '');
-        if (!token) {
-            throw new HttpException('Can not get token', HttpStatus.BAD_REQUEST);
-        }
         try {
+            const token = request.headers.authorization.replace('Bearer ', '');
             const userId = await this.JwtService.verifyToken(token);
             const userRole = await this.cacheService.get(`users:${userId.id}:accessToken`);
             request.userId = userId.id;
@@ -28,7 +25,7 @@ export class RolesGuard implements CanActivate {
             }
             return true;
         } catch (err) {
-            throw new HttpException('you have timed out for login ', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Can not get the token or You have timed out for login', HttpStatus.BAD_REQUEST);
         }
     }
 }

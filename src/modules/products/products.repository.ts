@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class ProductRepository extends RepositoryUtils<Product> {
-    constructor(@InjectRepository(Product) private ProductRepository: Repository<Product>) {
-        super(ProductRepository);
+    constructor(@InjectRepository(Product) private productRepository: Repository<Product>) {
+        super(productRepository);
     }
 }

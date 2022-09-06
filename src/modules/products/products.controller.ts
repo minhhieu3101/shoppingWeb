@@ -1,3 +1,4 @@
+import { Picture } from './../pictures/pictures.entity';
 import { Product } from './products.entity';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { ProductsService } from './products.service';
@@ -12,6 +13,9 @@ import {
     Request,
     UseInterceptors,
     UploadedFiles,
+    Query,
+    DefaultValuePipe,
+    ParseIntPipe,
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
@@ -20,6 +24,7 @@ import { UpdateProductDto } from './dto/updateProduct.dto';
 import { ProductStatus } from 'src/commons/enum/products.enum';
 import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger/dist';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @ApiTags('Product')
 @ApiBearerAuth()
@@ -43,15 +48,41 @@ export class ProductsController {
     @ApiParam({
         name: 'categoryId',
     })
-    getProductsByCategory(@Param() params, @Request() req) {
-        return this.productService.getAllProductByCategory(params.categoryId, req.userRole);
+    getAllProductByCategory(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Request() req,
+        @Param() params,
+    ): Promise<Pagination<Product>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.productService.getAllProductByCategory(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/products/:categoryId',
+            },
+            params.categoryId,
+            req.userRole as Role,
+        );
     }
 
     @Get('/products')
     @Roles(Role.user, Role.admin)
     @UseGuards(RolesGuard)
-    getProducts(@Request() req) {
-        return this.productService.getAllProduct(req.userRole);
+    getAllProduct(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Request() req,
+    ): Promise<Pagination<Product>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.productService.getAllProduct(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/products',
+            },
+            req.userRole as Role,
+        );
     }
 
     @Get('/products/images/:productId')
@@ -60,8 +91,20 @@ export class ProductsController {
     @ApiParam({
         name: 'productId',
     })
-    getProductImages(@Param() params) {
-        return this.productService.getAllImageProduct(params.productId);
+    getImageProduct(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Param() params,
+    ): Promise<Pagination<Picture>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.productService.getImageProduct(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/products/images/:productId',
+            },
+            params.productId,
+        );
     }
 
     @Post('/admin/products')
