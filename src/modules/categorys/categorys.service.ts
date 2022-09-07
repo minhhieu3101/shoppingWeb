@@ -1,11 +1,11 @@
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
 import { CategoryStatus } from './../../commons/enum/categorys.enum';
-import { ERROR } from 'src/commons/errorHandling/errorHandling';
+import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { Category } from './categorys.entity';
 import { CategoryRepository } from './categorys.repository';
 import { Injectable, NotFoundException, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 
 @Injectable()
 export class CategoryService {

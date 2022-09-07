@@ -5,7 +5,7 @@ import { User } from './../users/users.entity';
 import { AuthService } from './auth.service';
 import { CreateAccountDto } from './dto/createAccount.dto';
 import { ApiQuery, ApiTags } from '@nestjs/swagger/dist';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 
 @ApiTags('auth')
 @Controller()

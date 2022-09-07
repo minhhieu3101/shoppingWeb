@@ -1,9 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { UserService } from './../users/users.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import { User } from '../users/users.entity';
 import { jwtService } from '../jwts/jwts.service';
 import { CacheService } from '../cache/cache.service';
+import { ERROR } from '../../commons/errorHandling/errorHandling';
 
 @Injectable()
 export class AuthService {
@@ -87,6 +88,9 @@ export class AuthService {
                 },
             );
             const user = await this.userService.getYourInfo(userId);
+            if (!user) {
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
+            }
             await this.cacheService.set(
                 `users:${userId}:accessToken`,
                 user.role,

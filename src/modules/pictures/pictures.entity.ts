@@ -1,5 +1,5 @@
 import { Product } from './../products/products.entity';
-import { EntityBase } from 'src/commons/database/baseEntity';
+import { EntityBase } from '../../commons/database/baseEntity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

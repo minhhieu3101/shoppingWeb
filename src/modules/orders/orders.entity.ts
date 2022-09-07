@@ -1,7 +1,7 @@
-import { EntityBase } from 'src/commons/database/baseEntity';
+import { EntityBase } from '../../commons/database/baseEntity';
 import { User } from './../users/users.entity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { OrderStatus } from 'src/commons/enum/orders.enum';
+import { OrderStatus } from '../../commons/enum/orders.enum';
 import { Exclude } from 'class-transformer';
 
 @Entity()

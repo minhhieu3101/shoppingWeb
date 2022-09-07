@@ -1,6 +1,6 @@
 import { UserStatus } from './../../commons/enum/users.enum';
 import { Exclude } from 'class-transformer';
-import { EntityBase } from 'src/commons/database/baseEntity';
+import { EntityBase } from '../../commons/database/baseEntity';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { Role } from '../../commons/enum/roles.enum';
 

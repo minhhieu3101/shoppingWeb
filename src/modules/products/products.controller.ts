@@ -19,10 +19,10 @@ import {
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 import { UpdateProductDto } from './dto/updateProduct.dto';
-import { ProductStatus } from 'src/commons/enum/products.enum';
-import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger/dist';
+import { ProductStatus } from '../../commons/enum/products.enum';
+import { ApiBearerAuth, ApiConsumes, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger/dist';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
@@ -48,6 +48,8 @@ export class ProductsController {
     @ApiParam({
         name: 'categoryId',
     })
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
     getAllProductByCategory(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
@@ -69,6 +71,8 @@ export class ProductsController {
     @Get('/products')
     @Roles(Role.user, Role.admin)
     @UseGuards(RolesGuard)
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
     getAllProduct(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
@@ -91,6 +95,8 @@ export class ProductsController {
     @ApiParam({
         name: 'productId',
     })
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
     getImageProduct(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,

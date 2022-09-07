@@ -1,11 +1,11 @@
 import { SendMailService } from '../sendMail/sendMail.service';
 import { User } from './users.entity';
 import { UserRepository } from './users.repository';
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { ERROR } from 'src/commons/errorHandling/errorHandling';
-import { comparePassword, hashPassword } from 'src/utils/encrypt.utils';
-import { Role } from 'src/commons/enum/roles.enum';
-import { UserStatus } from 'src/commons/enum/users.enum';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { ERROR } from '../../commons/errorHandling/errorHandling';
+import { comparePassword, hashPassword } from '../../utils/encrypt.utils';
+import { Role } from '../../commons/enum/roles.enum';
+import { UserStatus } from '../../commons/enum/users.enum';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()
@@ -17,10 +17,9 @@ export class UserService {
         if (!userCheck || userCheck.status === UserStatus.deleted) {
             user.password = await hashPassword(user.password);
             user.activeCode = await this.emailService.sendMail(user.email);
-            console.log(user.activeCode);
             return this.userRepository.save(user);
         }
-        throw new NotFoundException(ERROR.USERNAME_OR_EMAIL_EXISTED);
+        throw new HttpException(ERROR.USERNAME_OR_EMAIL_EXISTED.message, ERROR.USERNAME_OR_EMAIL_EXISTED.statusCode);
     }
 
     async findUserForLogin(account: string, password: string) {
@@ -28,15 +27,18 @@ export class UserService {
             where: [{ username: account }, { email: account }],
         });
         if (!user || !(await comparePassword(password, user.password))) {
-            throw new UnauthorizedException(ERROR.USERNAME_OR_PASSWORD_INCORRECT);
+            throw new HttpException(
+                ERROR.USERNAME_OR_PASSWORD_INCORRECT.message,
+                ERROR.USERNAME_OR_PASSWORD_INCORRECT.statusCode,
+            );
         }
-
         if (user.status === UserStatus.inactive) {
-            throw new UnauthorizedException(ERROR.USER_IS_NOT_VERIFIED);
+            throw new HttpException(ERROR.USER_IS_NOT_VERIFIED.message, ERROR.USER_IS_NOT_VERIFIED.statusCode);
         }
         if (user.status === UserStatus.deleted) {
-            throw new NotFoundException(ERROR.USER_IS_DELETED);
+            throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
         }
+
         return user;
     }
 
@@ -46,16 +48,16 @@ export class UserService {
                 where: [{ username: account }, { email: account }],
             });
             if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
             }
             if (user.status === UserStatus.active) {
-                throw new UnauthorizedException(ERROR.USER_IS_VERIFIED);
+                throw new HttpException(ERROR.USER_IS_VERIFIED.message, ERROR.USER_IS_VERIFIED.statusCode);
             }
             if (user.status === UserStatus.deleted) {
-                throw new UnauthorizedException(ERROR.USER_IS_DELETED);
+                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
             if (user.activeCode !== otp) {
-                throw new NotFoundException(ERROR.ACTIVECODE_IS_WRONG);
+                throw new HttpException(ERROR.ACTIVECODE_IS_WRONG.message, ERROR.ACTIVECODE_IS_WRONG.statusCode);
             }
             user.status = UserStatus.active;
             await this.userRepository.save(user);
@@ -73,10 +75,10 @@ export class UserService {
                 where: { email: email },
             });
             if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
             }
             if (user.status === UserStatus.deleted) {
-                throw new NotFoundException(ERROR.USER_IS_DELETED);
+                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
 
             user.activeCode = await this.emailService.sendMail(user.email);
@@ -95,14 +97,14 @@ export class UserService {
                 where: { email: email },
             });
             if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
             }
             if (user.status === UserStatus.deleted) {
-                throw new NotFoundException(ERROR.USER_IS_DELETED);
+                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
 
             if (user.activeCode !== otp) {
-                throw new NotFoundException(ERROR.ACTIVECODE_IS_WRONG);
+                throw new HttpException(ERROR.ACTIVECODE_IS_WRONG.message, ERROR.ACTIVECODE_IS_WRONG.statusCode);
             }
             user.password = await hashPassword(password);
             await this.userRepository.save(user);
@@ -130,13 +132,13 @@ export class UserService {
         try {
             const user = await this.userRepository.getById(id);
             if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
             }
             if (user.status === UserStatus.deleted) {
-                throw new NotFoundException(ERROR.USER_IS_DELETED);
+                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
             if (!(user.password === password)) {
-                throw new NotFoundException(ERROR.PASSWORD_INCORRECT);
+                throw new HttpException(ERROR.PASSWORD_INCORRECT.message, ERROR.PASSWORD_INCORRECT.statusCode);
             }
             user.password = newPassword;
             user.updatedAt = new Date();
@@ -150,23 +152,24 @@ export class UserService {
     }
 
     async updateUser(id: string, info: any) {
-        if (await this.userRepository.update(id, info)) {
-            return await this.userRepository.getById(id);
+        try {
+            return await this.userRepository.update(id, info);
+        } catch (err) {
+            throw new HttpException('Update Failed', HttpStatus.BAD_REQUEST);
         }
-        throw new UnauthorizedException();
     }
 
     async grantPermission(id: string) {
         try {
             const user = await this.userRepository.getById(id);
             if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
             }
             if (user.status === UserStatus.deleted) {
-                throw new NotFoundException(ERROR.USER_IS_DELETED);
+                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
             if (user.role === Role.admin) {
-                throw new UnauthorizedException(ERROR.USER_IS_ADMIN);
+                throw new HttpException(ERROR.USER_IS_ADMIN.message, ERROR.USER_IS_ADMIN.statusCode);
             }
             user.role = Role.admin;
             user.updatedAt = new Date();
@@ -183,13 +186,13 @@ export class UserService {
         try {
             const user = await this.userRepository.getById(id);
             if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
-            }
-            if (user.role === Role.admin) {
-                throw new UnauthorizedException(ERROR.USER_IS_ADMIN);
+                throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
             }
             if (user.status === UserStatus.deleted) {
-                throw new UnauthorizedException(ERROR.USER_IS_DELETED);
+                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
+            }
+            if (user.role === Role.admin) {
+                throw new HttpException(ERROR.USER_IS_ADMIN.message, ERROR.USER_IS_ADMIN.statusCode);
             }
             user.status = UserStatus.deleted;
             user.updatedAt = new Date();

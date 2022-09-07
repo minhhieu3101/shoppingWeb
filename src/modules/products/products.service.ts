@@ -3,7 +3,7 @@ import { PicturesService } from './../pictures/pictures.service';
 import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { ProductStatus } from './../../commons/enum/products.enum';
 import { Role } from './../../commons/enum/roles.enum';
-import { ERROR } from 'src/commons/errorHandling/errorHandling';
+import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { CategoryService } from './../categorys/categorys.service';
 import { Injectable, NotFoundException, HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { Product } from './products.entity';

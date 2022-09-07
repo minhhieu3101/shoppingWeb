@@ -23,8 +23,8 @@ import { UserService } from './users.service';
 import { sendOtpDTO } from './dto/sendOTP.dto';
 import { changePasswordDTO } from './dto/changePassword.dto';
 import { Roles } from '../guards/roles.decorator';
-import { Role } from 'src/commons/enum/roles.enum';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger/dist';
+import { Role } from '../../commons/enum/roles.enum';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger/dist';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
 @ApiTags('User')
@@ -51,6 +51,8 @@ export class UserController {
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiBearerAuth()
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
     getAllUser(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,

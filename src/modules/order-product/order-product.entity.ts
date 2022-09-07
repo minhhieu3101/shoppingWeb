@@ -1,9 +1,9 @@
-import { EntityBase } from 'src/commons/database/baseEntity';
+import { EntityBase } from '../../commons/database/baseEntity';
 import { Order } from './../orders/orders.entity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from '../products/products.entity';
 import { Exclude } from 'class-transformer';
-import { OrderStatus } from 'src/commons/enum/orders.enum';
+import { OrderStatus } from '../../commons/enum/orders.enum';
 
 @Entity()
 export class OrderProduct extends EntityBase {

@@ -1,6 +1,6 @@
 import { CacheService } from './../cache/cache.service';
 import { jwtService } from './../jwts/jwts.service';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 

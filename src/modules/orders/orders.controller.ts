@@ -1,6 +1,6 @@
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 import { OrdersService } from './orders.service';
 import {
     Controller,

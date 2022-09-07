@@ -1,6 +1,6 @@
 import { Exclude } from 'class-transformer';
-import { EntityBase } from 'src/commons/database/baseEntity';
-import { CategoryStatus } from 'src/commons/enum/categorys.enum';
+import { EntityBase } from '../../commons/database/baseEntity';
+import { CategoryStatus } from '../../commons/enum/categorys.enum';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

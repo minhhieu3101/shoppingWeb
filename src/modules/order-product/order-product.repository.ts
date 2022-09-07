@@ -1,8 +1,8 @@
-import { ProductStatus } from 'src/commons/enum/products.enum';
+import { ProductStatus } from '../../commons/enum/products.enum';
 import { OrderProduct } from './order-product.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RepositoryUtils } from 'src/utils/database.utils';
+import { RepositoryUtils } from '../../utils/database.utils';
 import { Repository } from 'typeorm';
 
 @Injectable()

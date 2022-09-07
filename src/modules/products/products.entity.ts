@@ -1,6 +1,6 @@
 import { Category } from './../categorys/categorys.entity';
-import { EntityBase } from 'src/commons/database/baseEntity';
-import { ProductStatus } from 'src/commons/enum/products.enum';
+import { EntityBase } from '../../commons/database/baseEntity';
+import { ProductStatus } from '../../commons/enum/products.enum';
 import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { Exclude } from 'class-transformer';
 

@@ -1,11 +1,11 @@
 import { OrderStatus } from './../../commons/enum/orders.enum';
-import { ERROR } from 'src/commons/errorHandling/errorHandling';
+import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { ProductRepository } from './../products/products.repository';
 import { Order } from './../orders/orders.entity';
 import { OrderProduct } from './order-product.entity';
 import { OrderProductRepository } from './order-product.repository';
 import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
-import { ProductStatus } from 'src/commons/enum/products.enum';
+import { ProductStatus } from '../../commons/enum/products.enum';
 
 @Injectable()
 export class OrderProductService {

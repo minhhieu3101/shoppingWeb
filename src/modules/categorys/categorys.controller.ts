@@ -19,8 +19,8 @@ import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
 import { Category } from './categorys.entity';
 import { CreateCategoryDto } from './dto/createCategory.dto';
-import { Role } from 'src/commons/enum/roles.enum';
-import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger/dist';
+import { Role } from '../../commons/enum/roles.enum';
+import { ApiBearerAuth, ApiConsumes, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger/dist';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Query, UploadedFile } from '@nestjs/common/decorators';
 import { Pagination } from 'nestjs-typeorm-paginate';
@@ -35,6 +35,8 @@ export class CategoryController {
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
     getAllCategoryForUser(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
@@ -65,6 +67,8 @@ export class CategoryController {
     @Get('/admin/category')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
     getAllCategoryForAdmin(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,

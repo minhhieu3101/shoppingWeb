@@ -7,7 +7,7 @@ export const ERROR = {
 
     // user
     USER_NOT_FOUND: {
-        statusCode: 400,
+        statusCode: 404,
         message: 'User not found',
     },
     USERNAME_OR_PASSWORD_INCORRECT: {
