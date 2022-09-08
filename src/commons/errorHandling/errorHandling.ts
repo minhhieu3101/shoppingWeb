@@ -50,7 +50,7 @@ export const ERROR = {
     //category
     CATEGORY_NOT_FOUND: {
         message: 'Category not found',
-        statusCode: 400,
+        statusCode: 404,
     },
     CATEGORY_IS_EXIST: {
         statusCode: 400,
@@ -72,7 +72,7 @@ export const ERROR = {
     //PRODUCT
     PRODUCT_NOT_FOUND: {
         message: 'PRODUCT not found',
-        statusCode: 400,
+        statusCode: 404,
     },
     PRODUCT_IS_EXIST: {
         statusCode: 400,

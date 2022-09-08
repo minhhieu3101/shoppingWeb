@@ -3,7 +3,7 @@ import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { Category } from './categorys.entity';
 import { CategoryRepository } from './categorys.repository';
-import { Injectable, NotFoundException, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Role } from '../../commons/enum/roles.enum';
 
@@ -35,7 +35,7 @@ export class CategoryService {
         try {
             return await this.categoryRepository.getByCondition({ where: condition });
         } catch (err) {
-            throw new NotFoundException(ERROR.CATEGORY_NOT_FOUND);
+            throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
         }
     }
 
@@ -43,43 +43,50 @@ export class CategoryService {
         try {
             return await this.categoryRepository.getById(id);
         } catch (err) {
-            throw new NotFoundException(ERROR.CATEGORY_NOT_FOUND);
+            throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
         }
     }
 
     async createCategory(info: any, upload: Express.Multer.File): Promise<Category> {
         const categoryName = info.name;
         try {
-            await this.categoryRepository.getByName(categoryName);
+            const category = await this.categoryRepository.getByName(categoryName);
+            if (category) {
+                throw new HttpException(ERROR.CATEGORY_IS_EXIST.message, ERROR.CATEGORY_IS_EXIST.statusCode);
+            }
             const file = await this.cloudinaryService.uploadImageToCloudinary(upload);
             info.banner = file.url;
             return await this.categoryRepository.save(info);
         } catch (err) {
-            console.log(err);
-
-            throw new UnauthorizedException(ERROR.CATEGORY_IS_EXIST);
+            throw err;
         }
     }
 
     async updateCategory(id: string, info: any): Promise<Category> {
         try {
             const category = await this.categoryRepository.getById(id);
+            if (!category) {
+                throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
+            }
             if (category.status === CategoryStatus.inactive) {
-                throw new UnauthorizedException(ERROR.CATEGORY_IS_INACTIVE);
+                throw new HttpException(ERROR.CATEGORY_IS_INACTIVE.message, ERROR.CATEGORY_IS_INACTIVE.statusCode);
             }
             if (info.name && (await this.categoryRepository.getByName(info.name))) {
-                throw new UnauthorizedException(ERROR.CATEGORY_IS_EXIST);
+                throw new HttpException(ERROR.CATEGORY_IS_EXIST.message, ERROR.CATEGORY_IS_EXIST.statusCode);
             }
             info.updatedAt = new Date();
             return await this.categoryRepository.update(id, info);
         } catch (err) {
-            throw new NotFoundException(ERROR.CATEGORY_NOT_FOUND);
+            throw err;
         }
     }
 
     async changeCategoryStatus(id: string, status: CategoryStatus): Promise<any> {
         try {
             const category = await this.categoryRepository.getById(id);
+            if (!category) {
+                throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
+            }
             if (category.status === status) {
                 throw new HttpException(`This category is ${status} already`, HttpStatus.BAD_REQUEST);
             }
@@ -90,7 +97,7 @@ export class CategoryService {
                 message: `This category status is changed to ${status} now`,
             };
         } catch (err) {
-            throw new NotFoundException(ERROR.CATEGORY_NOT_FOUND);
+            throw err;
         }
     }
 

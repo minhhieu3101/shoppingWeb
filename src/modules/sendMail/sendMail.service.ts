@@ -19,13 +19,17 @@ export class SendMailService {
     }
 
     async sendMail(email: string) {
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
-        await this.nodemailerTransport.sendMail({
-            from: '"MinhHieu " <mhieu3101@gmail.com>',
-            to: email,
-            subject: 'Verify Your Account',
-            html: `<p>Enter <b>${otp}</b> to verify your email address</p>`,
-        });
-        return otp;
+        try {
+            const otp = Math.floor(1000 + Math.random() * 9000).toString();
+            await this.nodemailerTransport.sendMail({
+                from: '"MinhHieu " <mhieu3101@gmail.com>',
+                to: email,
+                subject: 'Verify Your Account',
+                html: `<p>Enter <b>${otp}</b> to verify your email address</p>`,
+            });
+            return otp;
+        } catch (err) {
+            throw err;
+        }
     }
 }

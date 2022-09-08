@@ -7,6 +7,7 @@ import { comparePassword, hashPassword } from '../../utils/encrypt.utils';
 import { Role } from '../../commons/enum/roles.enum';
 import { UserStatus } from '../../commons/enum/users.enum';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -112,6 +113,8 @@ export class UserService {
                 message: `Change forgot password in account ${email} is success `,
             };
         } catch (err) {
+            console.log(err);
+
             throw err;
         }
     }
@@ -130,12 +133,14 @@ export class UserService {
 
     async changePassword(id: string, password: string, newPassword: string) {
         try {
-            const user = await this.userRepository.getById(id);
+            const user = await this.userRepository.getByCondition({
+                where: {
+                    id: id,
+                    status: Not(UserStatus.deleted),
+                },
+            });
             if (!user) {
                 throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
-            }
-            if (user.status === UserStatus.deleted) {
-                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
             if (!(user.password === password)) {
                 throw new HttpException(ERROR.PASSWORD_INCORRECT.message, ERROR.PASSWORD_INCORRECT.statusCode);
@@ -147,6 +152,8 @@ export class UserService {
                 message: `Change password in account is success `,
             };
         } catch (err) {
+            console.log(err);
+
             throw err;
         }
     }
@@ -161,12 +168,14 @@ export class UserService {
 
     async grantPermission(id: string) {
         try {
-            const user = await this.userRepository.getById(id);
+            const user = await this.userRepository.getByCondition({
+                where: {
+                    id: id,
+                    status: Not(UserStatus.deleted),
+                },
+            });
             if (!user) {
                 throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
-            }
-            if (user.status === UserStatus.deleted) {
-                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
             if (user.role === Role.admin) {
                 throw new HttpException(ERROR.USER_IS_ADMIN.message, ERROR.USER_IS_ADMIN.statusCode);
@@ -184,12 +193,14 @@ export class UserService {
 
     async deleteUser(id: string) {
         try {
-            const user = await this.userRepository.getById(id);
+            const user = await this.userRepository.getByCondition({
+                where: {
+                    id: id,
+                    status: Not(UserStatus.deleted),
+                },
+            });
             if (!user) {
                 throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
-            }
-            if (user.status === UserStatus.deleted) {
-                throw new HttpException(ERROR.USER_IS_DELETED.message, ERROR.USER_IS_DELETED.statusCode);
             }
             if (user.role === Role.admin) {
                 throw new HttpException(ERROR.USER_IS_ADMIN.message, ERROR.USER_IS_ADMIN.statusCode);
