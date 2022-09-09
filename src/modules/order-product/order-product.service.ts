@@ -1,10 +1,9 @@
 import { OrderStatus } from './../../commons/enum/orders.enum';
-import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { ProductRepository } from './../products/products.repository';
 import { Order } from './../orders/orders.entity';
 import { OrderProduct } from './order-product.entity';
 import { OrderProductRepository } from './order-product.repository';
-import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ProductStatus } from '../../commons/enum/products.enum';
 
 @Injectable()
@@ -15,9 +14,6 @@ export class OrderProductService {
         try {
             const order = info.order as Order;
             const product = await this.productRepo.getById(info.productId);
-            if (!product) {
-                throw new NotFoundException(ERROR.PRODUCT_NOT_FOUND);
-            }
             info.price = product.exportPrice * info.quantity;
             const orderProduct = await this.orderProductRepo.save({
                 price: info.price,
@@ -88,6 +84,9 @@ export class OrderProductService {
                 },
                 relations: { orderId: true },
             });
+            if (!orderProduct) {
+                throw new HttpException('Can not find this order product', HttpStatus.BAD_REQUEST);
+            }
             orderProduct.status = OrderStatus.inactive;
             await orderProduct.save();
             return orderProduct;

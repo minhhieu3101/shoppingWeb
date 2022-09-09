@@ -16,6 +16,7 @@ import {
     Query,
     DefaultValuePipe,
     ParseIntPipe,
+    ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
@@ -25,6 +26,7 @@ import { ProductStatus } from '../../commons/enum/products.enum';
 import { ApiBearerAuth, ApiConsumes, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger/dist';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Pagination } from 'nestjs-typeorm-paginate';
+import { Delete } from '@nestjs/common/decorators';
 
 @ApiTags('Product')
 @ApiBearerAuth()
@@ -32,25 +34,36 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 export class ProductsController {
     constructor(private readonly productService: ProductsService) {}
 
-    @Get('/products/:productId')
-    @Roles(Role.user, Role.admin)
+    @Get('/admin/products/:productId')
+    @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'productId',
     })
-    getProductById(@Param() params, @Request() req) {
+    getProductByIdForAdmin(@Param() params, @Request() req) {
         return this.productService.getProductById(params.productId, req.userRole);
     }
 
-    @Get('/products/:categoryId')
-    @Roles(Role.user, Role.admin)
+    @Get('/user/products/:productId')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
+    @ApiParam({
+        name: 'productId',
+    })
+    getProductByIdForUser(@Param() params, @Request() req) {
+        return this.productService.getProductById(params.productId, req.userRole);
+    }
+
+    @Get('/admin/products/categoryId/:categoryId')
+    @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'categoryId',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
-    getAllProductByCategory(
+    getAllProductByCategoryForAdmin(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
         @Request() req,
@@ -68,12 +81,61 @@ export class ProductsController {
         );
     }
 
-    @Get('/products')
-    @Roles(Role.user, Role.admin)
+    @Get('/user/products/categoryId/:categoryId')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
+    @ApiParam({
+        name: 'categoryId',
+    })
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
+    getAllProductByCategoryForUser(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Request() req,
+        @Param() params,
+    ): Promise<Pagination<Product>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.productService.getAllProductByCategory(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/products/:categoryId',
+            },
+            params.categoryId,
+            req.userRole as Role,
+        );
+    }
+
+    @Get('/admin/products')
+    @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
-    getAllProduct(
+    getAllProductForAdmin(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+        @Request() req,
+    ): Promise<Pagination<Product>> {
+        limit = limit > 100 ? 100 : limit;
+        return this.productService.getAllProduct(
+            {
+                page,
+                limit,
+                route: 'http://localhost:3000/products',
+            },
+            req.userRole as Role,
+        );
+    }
+
+    @Get('/user/products')
+    @Roles(Role.user)
+    @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
+    @ApiQuery({ name: 'limit', type: 'number', required: false })
+    @ApiQuery({ name: 'page', type: 'number', required: false })
+    getAllProductForUser(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
         @Request() req,
@@ -132,23 +194,23 @@ export class ProductsController {
         return this.productService.updateProduct(params.id, product);
     }
 
-    @Patch('/admin/products/inactive/:id')
+    @Delete('/admin/products/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
     })
-    inactiveProduct(@Param() params) {
+    deleteProduct(@Param() params) {
         return this.productService.changeProductStatus(params.id, ProductStatus.unavailable);
     }
 
-    @Patch('/admin/products/active/:id')
-    @Roles(Role.admin)
-    @UseGuards(RolesGuard)
-    @ApiParam({
-        name: 'id',
-    })
-    activeProduct(@Param() params) {
-        return this.productService.changeProductStatus(params.id, ProductStatus.active);
-    }
+    // @Patch('/admin/products/active/:id')
+    // @Roles(Role.admin)
+    // @UseGuards(RolesGuard)
+    // @ApiParam({
+    //     name: 'id',
+    // })
+    // activeProduct(@Param() params) {
+    //     return this.productService.changeProductStatus(params.id, ProductStatus.active);
+    // }
 }

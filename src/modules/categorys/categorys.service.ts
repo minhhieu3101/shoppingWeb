@@ -3,7 +3,7 @@ import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { Category } from './categorys.entity';
 import { CategoryRepository } from './categorys.repository';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Role } from '../../commons/enum/roles.enum';
 
@@ -40,22 +40,30 @@ export class CategoryService {
     }
 
     async getCategoryById(id: string): Promise<Category> {
-        try {
-            return await this.categoryRepository.getById(id);
-        } catch (err) {
-            throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
-        }
+        return await this.categoryRepository.getByCondition({
+            where: {
+                id: id,
+                status: CategoryStatus.active,
+            },
+        });
     }
 
     async createCategory(info: any, upload: Express.Multer.File): Promise<Category> {
         const categoryName = info.name;
         try {
-            const category = await this.categoryRepository.getByName(categoryName);
+            const category = await this.categoryRepository.getByCondition({
+                where: {
+                    name: categoryName,
+                    status: CategoryStatus.active,
+                },
+            });
             if (category) {
                 throw new HttpException(ERROR.CATEGORY_IS_EXIST.message, ERROR.CATEGORY_IS_EXIST.statusCode);
             }
-            const file = await this.cloudinaryService.uploadImageToCloudinary(upload);
-            info.banner = file.url;
+            if (upload) {
+                const file = await this.cloudinaryService.uploadImageToCloudinary(upload);
+                info.banner = file.url;
+            }
             return await this.categoryRepository.save(info);
         } catch (err) {
             throw err;
@@ -64,12 +72,14 @@ export class CategoryService {
 
     async updateCategory(id: string, info: any): Promise<Category> {
         try {
-            const category = await this.categoryRepository.getById(id);
+            const category = await this.categoryRepository.getByCondition({
+                where: {
+                    id: id,
+                    status: CategoryStatus.active,
+                },
+            });
             if (!category) {
                 throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
-            }
-            if (category.status === CategoryStatus.inactive) {
-                throw new HttpException(ERROR.CATEGORY_IS_INACTIVE.message, ERROR.CATEGORY_IS_INACTIVE.statusCode);
             }
             if (info.name && (await this.categoryRepository.getByName(info.name))) {
                 throw new HttpException(ERROR.CATEGORY_IS_EXIST.message, ERROR.CATEGORY_IS_EXIST.statusCode);
@@ -81,20 +91,22 @@ export class CategoryService {
         }
     }
 
-    async changeCategoryStatus(id: string, status: CategoryStatus): Promise<any> {
+    async deleteCategory(id: string): Promise<any> {
         try {
-            const category = await this.categoryRepository.getById(id);
+            const category = await this.categoryRepository.getByCondition({
+                where: {
+                    id: id,
+                    status: CategoryStatus.active,
+                },
+            });
             if (!category) {
                 throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
             }
-            if (category.status === status) {
-                throw new HttpException(`This category is ${status} already`, HttpStatus.BAD_REQUEST);
-            }
-            category.status = status;
+            category.status = CategoryStatus.inactive;
             category.updatedAt = new Date();
             await this.categoryRepository.save(category);
             return {
-                message: `This category status is changed to ${status} now`,
+                message: `This category status is deleted`,
             };
         } catch (err) {
             throw err;
@@ -103,7 +115,7 @@ export class CategoryService {
 
     async checkCategoryActive(id: string): Promise<boolean> {
         try {
-            const category = await this.getCategoryById(id);
+            const category = await this.categoryRepository.getById(id);
             return category.status === CategoryStatus.active;
         } catch (err) {
             throw err;

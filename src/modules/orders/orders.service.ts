@@ -1,9 +1,8 @@
 import { OrderStatus } from './../../commons/enum/orders.enum';
 import { UserService } from './../users/users.service';
-import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { OrderProductService } from './../order-product/order-product.service';
 import { OrderRepository } from './orders.repository';
-import { Injectable, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class OrdersService {
@@ -16,9 +15,6 @@ export class OrdersService {
     async createOrder(info: any, userId: string) {
         try {
             const user = await this.userService.getYourInfo(userId);
-            if (!user) {
-                throw new NotFoundException(ERROR.USER_NOT_FOUND);
-            }
             const order = await this.orderRepository.save({
                 address: info.address,
                 description: info.description ? info.description : null,
@@ -119,7 +115,6 @@ export class OrdersService {
             const order = orderProduct.orderId;
 
             const countOrderProduct = await this.orderProductService.countOrderProduct(order.id);
-            console.log(countOrderProduct);
 
             if (countOrderProduct === 0) {
                 order.status = OrderStatus.inactive;
@@ -131,7 +126,6 @@ export class OrdersService {
             };
         } catch (err) {
             console.log(err);
-
             throw err;
         }
     }
@@ -156,7 +150,6 @@ export class OrdersService {
             };
         } catch (err) {
             console.log(err);
-
             throw err;
         }
     }

@@ -9,7 +9,7 @@ export class CreateProductDto {
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     barcode: string;
 
     @ApiProperty()
@@ -38,10 +38,11 @@ export class CreateProductDto {
     description: string;
 
     @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
+    @IsOptional()
     files: 'img';
 
     @ApiProperty()
     @IsUUID()
-    @IsOptional()
+    @IsNotEmpty()
     categoryId: string;
 }

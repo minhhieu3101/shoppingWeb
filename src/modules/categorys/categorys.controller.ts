@@ -14,6 +14,7 @@ import {
     DefaultValuePipe,
     ParseIntPipe,
     Request,
+    Delete,
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
@@ -117,23 +118,13 @@ export class CategoryController {
         return this.categoryService.updateCategory(params.id, category);
     }
 
-    @Patch('/admin/category/inactive/:id')
+    @Delete('/admin/category/:id')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
     })
     inactiveCategory(@Param() params): Promise<Category> {
-        return this.categoryService.changeCategoryStatus(params.id, CategoryStatus.inactive);
-    }
-
-    @Patch('/admin/category/active/:id')
-    @Roles(Role.admin)
-    @UseGuards(RolesGuard)
-    @ApiParam({
-        name: 'id',
-    })
-    activeCategory(@Param() params): Promise<Category> {
-        return this.categoryService.changeCategoryStatus(params.id, CategoryStatus.active);
+        return this.categoryService.deleteCategory(params.id);
     }
 }

@@ -5,7 +5,7 @@ import { ProductStatus } from './../../commons/enum/products.enum';
 import { Role } from './../../commons/enum/roles.enum';
 import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { CategoryService } from './../categorys/categorys.service';
-import { Injectable, NotFoundException, HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Product } from './products.entity';
 import { ProductRepository } from './products.repository';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
@@ -16,39 +16,37 @@ export class ProductsService {
         private readonly productRepository: ProductRepository,
         private readonly categoryService: CategoryService,
         private readonly pictureService: PicturesService,
-    ) {
-        this.productRepository = productRepository;
-    }
+    ) {}
 
     async createProduct(productInfo: any, files: Express.Multer.File[]): Promise<Product> {
         try {
             const categoryId = productInfo.categoryId;
-            const checkCategoryActive = this.categoryService.checkCategoryActive(categoryId);
-            if (!checkCategoryActive) {
-                throw new UnauthorizedException(ERROR.CATEGORY_IS_INACTIVE);
+            const category = await this.categoryService.getCategoryById(categoryId);
+            if (!category) {
+                throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
             }
             const currentProduct = await this.productRepository.getByCondition({
                 where: {
                     name: productInfo.name,
+                    status: Not(ProductStatus.unavailable),
                     categoryId: {
                         id: categoryId,
+                        status: CategoryStatus.active,
                     },
                 },
             });
             if (currentProduct) {
                 throw new HttpException('This product name is existed in category', HttpStatus.BAD_REQUEST);
             }
-            const category = await this.categoryService.getCategoryById(categoryId);
-            if (!category) {
-                throw new HttpException('Not found this category', HttpStatus.BAD_REQUEST);
-            }
             productInfo.categoryId = category;
             if (productInfo.quantityInStock === '0') {
                 productInfo.status = ProductStatus.outOfStock;
             }
             const product = await this.productRepository.save(productInfo);
-            for (let i = 0; i < files.length; i++) {
-                await this.pictureService.createPicture(files[i], product);
+            if (files) {
+                for (let i = 0; i < files.length; i++) {
+                    await this.pictureService.createPicture(files[i], product);
+                }
             }
             return product;
         } catch (err) {
@@ -82,7 +80,7 @@ export class ProductsService {
             if (role === Role.admin) {
                 return await this.productRepository.getById(id);
             }
-            return await this.productRepository.getByCondition({
+            const product = await this.productRepository.getByCondition({
                 where: {
                     categoryId: {
                         status: CategoryStatus.active,
@@ -91,6 +89,10 @@ export class ProductsService {
                     status: Not(ProductStatus.unavailable),
                 },
             });
+            if (!product) {
+                throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
+            }
+            return product;
         } catch (err) {
             throw err;
         }
@@ -132,46 +134,73 @@ export class ProductsService {
         try {
             return await this.pictureService.getPicture(options, productId);
         } catch (err) {
-            throw err;
+            throw new HttpException('Get image product fail', HttpStatus.BAD_REQUEST);
         }
     }
 
     async updateProduct(id: string, productInfo: any): Promise<Product> {
         try {
-            await this.productRepository.getByName(productInfo.name);
+            const product = await this.productRepository.getByCondition({
+                where: {
+                    name: productInfo.name,
+                    categoryId: {
+                        status: CategoryStatus.active,
+                    },
+                },
+            });
+            if (product) {
+                throw new HttpException('This product name is existed', HttpStatus.BAD_REQUEST);
+            }
             productInfo.updatedAt = new Date();
             return await this.productRepository.update(id, productInfo);
         } catch (err) {
-            throw new HttpException('This product name is existed', HttpStatus.BAD_REQUEST);
+            throw err;
         }
     }
 
     async changeProductStatus(id: string, status: ProductStatus): Promise<any> {
         try {
-            const product = await this.productRepository.getById(id);
+            const product = await this.productRepository.getByCondition({
+                where: {
+                    id: id,
+                    categoryId: {
+                        status: CategoryStatus.active,
+                    },
+                },
+            });
+            if (!product) {
+                throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
+            }
             if (product.status === status) {
                 throw new HttpException(`This product is ${status} already`, HttpStatus.BAD_REQUEST);
             }
             product.status = status;
             product.updatedAt = new Date();
-            await product.save();
+            await this.productRepository.save(product);
             return {
-                message: `this product status is changed to ${status} `,
+                message: `this product status is deleted `,
             };
         } catch (err) {
-            if (err instanceof HttpException) {
-                throw err;
-            }
-            throw new NotFoundException(ERROR.PRODUCT_NOT_FOUND);
+            throw err;
         }
     }
 
     async checkProductCanOrder(id: string): Promise<boolean> {
         try {
-            const product = await this.productRepository.getById(id);
+            const product = await this.productRepository.getByCondition({
+                where: {
+                    id: id,
+                    categoryId: {
+                        status: CategoryStatus.active,
+                    },
+                },
+            });
+            if (!product) {
+                throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
+            }
             return product.status === ProductStatus.active;
         } catch (err) {
-            throw new NotFoundException(ERROR.PRODUCT_NOT_FOUND);
+            throw err;
         }
     }
 }
