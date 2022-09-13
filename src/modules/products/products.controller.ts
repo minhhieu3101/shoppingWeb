@@ -154,6 +154,7 @@ export class ProductsController {
     @Get('/products/images/:productId')
     @Roles(Role.user, Role.admin)
     @UseGuards(RolesGuard)
+    @UseInterceptors(ClassSerializerInterceptor)
     @ApiParam({
         name: 'productId',
     })
@@ -203,14 +204,4 @@ export class ProductsController {
     deleteProduct(@Param() params) {
         return this.productService.changeProductStatus(params.id, ProductStatus.unavailable);
     }
-
-    // @Patch('/admin/products/active/:id')
-    // @Roles(Role.admin)
-    // @UseGuards(RolesGuard)
-    // @ApiParam({
-    //     name: 'id',
-    // })
-    // activeProduct(@Param() params) {
-    //     return this.productService.changeProductStatus(params.id, ProductStatus.active);
-    // }
 }

@@ -10,7 +10,7 @@ export class Order extends EntityBase {
     id: string;
 
     @Column({ default: 0 })
-    totalPrice: number;
+    totalPayment: number;
 
     @Column()
     address: string;

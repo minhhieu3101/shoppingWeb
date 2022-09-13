@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Length, MinLength } from 'class-validator';
-import { Role } from '../../../commons/enum/roles.enum';
+import { IsDateString, IsEmail, IsNotEmpty, IsString, Length, MinLength } from 'class-validator';
 
 export class CreateAccountDto {
     @ApiProperty()
@@ -40,9 +39,4 @@ export class CreateAccountDto {
     @IsDateString({}, { each: true })
     @IsNotEmpty()
     dob: Date;
-
-    @ApiProperty()
-    @IsEnum(Role)
-    @IsOptional()
-    role: Role;
 }

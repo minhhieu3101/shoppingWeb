@@ -18,27 +18,33 @@ export class OrdersService {
             const order = await this.orderRepository.save({
                 address: info.address,
                 description: info.description ? info.description : null,
-                totalPrice: 0,
+                totalPayment: 0,
                 userId: user,
             });
 
             const productArray = info.productArray;
-            let totalPrice = 0;
+            let totalPayment = 0;
             for (let i = 0; i < productArray.length; i++) {
                 if (!productArray[i].productId || !productArray[i].quantity) {
                     await this.orderRepository.deleteOneById(order.id);
                     throw new HttpException('Your product array has some wrong object', HttpStatus.BAD_REQUEST);
                 }
-                if (
-                    !(await this.orderProductService.checkEnoughQuantityInProductToSold(
-                        productArray[i].productId,
-                        productArray[i].quantity,
-                    ))
-                ) {
+                const checkProduct = await this.orderProductService.checkProductCanOrder(
+                    productArray[i].productId,
+                    productArray[i].quantity,
+                );
+                if (checkProduct === false) {
                     await this.orderRepository.deleteOneById(order.id);
                     throw new HttpException(
                         `This product ${productArray[i].productId} do not have enough quantity for your order`,
                         HttpStatus.BAD_REQUEST,
+                    );
+                }
+                if (checkProduct === null) {
+                    await this.orderRepository.deleteOneById(order.id);
+                    throw new HttpException(
+                        `This product ${productArray[i].productId} not found`,
+                        HttpStatus.NOT_FOUND,
                     );
                 }
             }
@@ -49,14 +55,12 @@ export class OrdersService {
                     quantity: productArray[i].quantity,
                 });
                 if (orderProduct) {
-                    totalPrice += orderProduct.price;
+                    totalPayment += orderProduct.payment;
                 }
             }
-            order.totalPrice += totalPrice;
+            order.totalPayment += totalPayment;
             return await this.orderRepository.save(order);
         } catch (err) {
-            console.log(err);
-
             throw err;
         }
     }
@@ -119,7 +123,7 @@ export class OrdersService {
             if (countOrderProduct === 0) {
                 order.status = OrderStatus.inactive;
             }
-            order.totalPrice -= orderProduct.price;
+            order.totalPayment -= orderProduct.payment;
             await order.save();
             return {
                 message: `Delete this order product ${orderProduct.id} is success`,
@@ -140,8 +144,7 @@ export class OrdersService {
             const orderProductArr = await this.orderProductService.getOrderProduct(id, OrderStatus.active);
 
             for (let i = 0; i < orderProductArr.length; i++) {
-                orderProductArr[i].status = OrderStatus.inactive;
-                await orderProductArr[i].save();
+                await this.orderProductService.deteteOrderProduct(orderProductArr[i].id);
             }
             order.status = OrderStatus.inactive;
             await order.save();

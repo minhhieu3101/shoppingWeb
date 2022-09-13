@@ -11,7 +11,7 @@ export class OrderProduct extends EntityBase {
     id: string;
 
     @Column()
-    price: number;
+    payment: number;
 
     @Column()
     quantity: number;

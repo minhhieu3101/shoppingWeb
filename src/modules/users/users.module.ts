@@ -12,6 +12,6 @@ import { cacheModule } from '../cache/cache.module';
     imports: [TypeOrmModule.forFeature([User]), SendMailModule, jwtModule, cacheModule],
     providers: [UserService, UserRepository],
     controllers: [UserController],
-    exports: [UserService],
+    exports: [UserService, UserRepository],
 })
 export class UsersModule {}

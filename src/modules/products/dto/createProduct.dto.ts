@@ -32,12 +32,12 @@ export class CreateProductDto {
     @IsNotEmpty()
     quantityInStock: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     @IsString()
     @IsOptional()
     description: string;
 
-    @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
+    @ApiProperty({ required: false, type: 'array', items: { type: 'string', format: 'binary' } })
     @IsOptional()
     files: 'img';
 

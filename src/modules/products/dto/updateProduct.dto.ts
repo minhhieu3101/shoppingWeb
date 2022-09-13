@@ -4,40 +4,40 @@ import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 export class UpdateProductDto {
     @IsString()
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     name: string;
 
     @IsString()
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     barcode: string;
 
     @IsNumber()
     @IsOptional()
     @Min(0)
-    @ApiProperty()
+    @ApiProperty({ required: false })
     importPrice: number;
 
     @IsNumber()
     @IsOptional()
     @Min(0)
-    @ApiProperty()
+    @ApiProperty({ required: false })
     exportPrice: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     weight: number;
 
     @IsNumber()
     @IsOptional()
     @Min(0)
-    @ApiProperty()
+    @ApiProperty({ required: false })
     quantityInStock: number;
 
     @IsString()
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     description: string;
 }

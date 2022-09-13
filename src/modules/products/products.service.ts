@@ -20,10 +20,27 @@ export class ProductsService {
 
     async createProduct(productInfo: any, files: Express.Multer.File[]): Promise<Product> {
         try {
+            if (
+                (productInfo.quantityInStock as number) < 0 ||
+                (productInfo.importPrice as number) < 0 ||
+                (productInfo.exportPrice as number) < 0 ||
+                (productInfo.weight as number) < 0
+            ) {
+                throw new HttpException(
+                    'Quantity or importPrice or exportPrice or weight is less than 0',
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            if ((productInfo.importPrice as number) > (productInfo.exportPrice as number)) {
+                throw new HttpException('Import price is higher than export price', HttpStatus.BAD_REQUEST);
+            }
             const categoryId = productInfo.categoryId;
             const category = await this.categoryService.getCategoryById(categoryId);
             if (!category) {
                 throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
+            }
+            if (productInfo.importPrice > productInfo.exportPrice) {
+                throw new HttpException('Import price is higher than export price', HttpStatus.BAD_REQUEST);
             }
             const currentProduct = await this.productRepository.getByCondition({
                 where: {
@@ -114,6 +131,10 @@ export class ProductsService {
                     });
                 return await this.productRepository.paginate(options, queryBuilder);
             }
+            const category = await this.categoryService.getCategoryById(categoryId);
+            if (!category) {
+                throw new HttpException('Not found this category', HttpStatus.NOT_FOUND);
+            }
 
             const queryBuilder = this.productRepository
                 .getRepository()
@@ -140,16 +161,32 @@ export class ProductsService {
 
     async updateProduct(id: string, productInfo: any): Promise<Product> {
         try {
+            if (
+                productInfo.importPrice &&
+                productInfo.exportPrice &&
+                productInfo.importPrice > productInfo.exportPrice
+            ) {
+                throw new HttpException('Import price is higher than export price', HttpStatus.BAD_REQUEST);
+            }
             const product = await this.productRepository.getByCondition({
                 where: {
-                    name: productInfo.name,
+                    id: id,
                     categoryId: {
                         status: CategoryStatus.active,
                     },
                 },
             });
-            if (product) {
+            if (!product) {
+                throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
+            }
+            if (product.name === productInfo.name) {
                 throw new HttpException('This product name is existed', HttpStatus.BAD_REQUEST);
+            }
+            if (productInfo.importPrice && !productInfo.exportPrice && productInfo.importPrice > product.exportPrice) {
+                throw new HttpException('New import price is higher than old export price', HttpStatus.BAD_REQUEST);
+            }
+            if (productInfo.exportPrice && !productInfo.importPrice && productInfo.exportPrice < product.importPrice) {
+                throw new HttpException('New export price is lower than old import price', HttpStatus.BAD_REQUEST);
             }
             productInfo.updatedAt = new Date();
             return await this.productRepository.update(id, productInfo);
@@ -185,22 +222,22 @@ export class ProductsService {
         }
     }
 
-    async checkProductCanOrder(id: string): Promise<boolean> {
-        try {
-            const product = await this.productRepository.getByCondition({
-                where: {
-                    id: id,
-                    categoryId: {
-                        status: CategoryStatus.active,
-                    },
-                },
-            });
-            if (!product) {
-                throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
-            }
-            return product.status === ProductStatus.active;
-        } catch (err) {
-            throw err;
-        }
-    }
+    // async checkProductCanOrder(id: string): Promise<boolean> {
+    //     try {
+    //         const product = await this.productRepository.getByCondition({
+    //             where: {
+    //                 id: id,
+    //                 categoryId: {
+    //                     status: CategoryStatus.active,
+    //                 },
+    //             },
+    //         });
+    //         if (!product) {
+    //             throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
+    //         }
+    //         return product.status === ProductStatus.active;
+    //     } catch (err) {
+    //         throw err;
+    //     }
+    // }
 }

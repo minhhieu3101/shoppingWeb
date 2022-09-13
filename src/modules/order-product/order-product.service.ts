@@ -1,3 +1,4 @@
+import { CategoryStatus } from './../../commons/enum/categorys.enum';
 import { OrderStatus } from './../../commons/enum/orders.enum';
 import { ProductRepository } from './../products/products.repository';
 import { Order } from './../orders/orders.entity';
@@ -14,9 +15,9 @@ export class OrderProductService {
         try {
             const order = info.order as Order;
             const product = await this.productRepo.getById(info.productId);
-            info.price = product.exportPrice * info.quantity;
+            info.payment = product.exportPrice * info.quantity;
             const orderProduct = await this.orderProductRepo.save({
-                price: info.price,
+                payment: info.payment,
                 quantity: info.quantity,
                 orderId: order,
                 productId: product,
@@ -35,12 +36,12 @@ export class OrderProductService {
         }
     }
 
-    async checkEnoughQuantityInProductToSold(productId: string, quantity: number): Promise<boolean> {
+    async checkProductCanOrder(productId: string, quantity: number): Promise<boolean> {
         const product = await this.productRepo.getByCondition({
-            where: { id: productId, status: ProductStatus.active },
+            where: { id: productId, status: ProductStatus.active, categoryId: { status: CategoryStatus.active } },
         });
         if (!product) {
-            return false;
+            return null;
         }
         return quantity < product.quantityInStock ? true : false;
     }
@@ -87,6 +88,9 @@ export class OrderProductService {
             if (!orderProduct) {
                 throw new HttpException('Can not find this order product', HttpStatus.BAD_REQUEST);
             }
+            const product = orderProduct.productId;
+            product.quantityInStock += orderProduct.quantity;
+            await product.save();
             orderProduct.status = OrderStatus.inactive;
             await orderProduct.save();
             return orderProduct;

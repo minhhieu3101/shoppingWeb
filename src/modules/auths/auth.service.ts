@@ -16,7 +16,11 @@ export class AuthService {
     ) {}
     async register(user: any): Promise<User> {
         try {
-            return await this.userService.createUser(user);
+            const newUser = await this.userService.createUser(user);
+            delete newUser.password;
+            delete newUser.role;
+            delete newUser.activeCode;
+            return newUser;
         } catch (err) {
             throw err;
         }

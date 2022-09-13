@@ -7,11 +7,11 @@ export class CreateCategoryDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     @IsString()
     @IsOptional()
     description: string;
 
-    @ApiProperty({ type: 'string', format: 'binary' })
+    @ApiProperty({ required: false, type: 'string', format: 'binary' })
     banner: 'img';
 }

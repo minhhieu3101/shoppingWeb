@@ -1,3 +1,5 @@
+import { UserCouponModule } from './modules/user-coupon/user-coupon.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
 import { AuthModule } from './modules/auths/auth.module';
@@ -26,6 +28,8 @@ import { memoryStorage } from 'multer';
         CategoryModule,
         ProductsModule,
         OrdersModule,
+        CouponsModule,
+        UserCouponModule,
         MulterModule.register({
             storage: memoryStorage(),
         }),
