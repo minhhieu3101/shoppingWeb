@@ -155,7 +155,7 @@ export class ProductsService {
         try {
             return await this.pictureService.getPicture(options, productId);
         } catch (err) {
-            throw new HttpException('Get image product fail', HttpStatus.BAD_REQUEST);
+            throw err;
         }
     }
 
@@ -179,7 +179,7 @@ export class ProductsService {
             if (!product) {
                 throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
             }
-            if (product.name === productInfo.name) {
+            if (await this.productRepository.getByName(productInfo.name)) {
                 throw new HttpException('This product name is existed', HttpStatus.BAD_REQUEST);
             }
             if (productInfo.importPrice && !productInfo.exportPrice && productInfo.importPrice > product.exportPrice) {

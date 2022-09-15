@@ -136,6 +136,7 @@ describe('Product', () => {
 
     describe('Update Product', () => {
         it('Update product success', () => {
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue({} as Product);
             jest.spyOn(productRepo, 'getByName').mockResolvedValue(null as Product);
             jest.spyOn(productRepo, 'update').mockResolvedValue({});
             return request(app.getHttpServer())
@@ -145,6 +146,7 @@ describe('Product', () => {
                 .expect(200);
         });
         it('Update product fail . This product name is exist', () => {
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue({} as Product);
             jest.spyOn(productRepo, 'getByName').mockResolvedValue({ name: 'bep' } as Product);
             return request(app.getHttpServer())
                 .patch('/admin/products/update/123213213')
@@ -152,21 +154,62 @@ describe('Product', () => {
                 .field('name', 'bep')
                 .expect(400);
         });
+        it('Update product fail . Not found product', () => {
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue(null as Product);
+            return request(app.getHttpServer())
+                .patch('/admin/products/update/123213213')
+                .type('form')
+                .field('name', 'bep')
+                .expect(404);
+        });
+
+        it('Update product fail . Import price is higher than export price', () => {
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue(null as Product);
+            return request(app.getHttpServer())
+                .patch('/admin/products/update/123213213')
+                .type('form')
+                .field('name', 'bep')
+                .field('importPrice', '20')
+                .field('exportPrice', '10')
+                .expect(400);
+        });
+        it('Update product fail . New export price is lower than old import price', () => {
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue({ importPrice: 20 } as Product);
+            jest.spyOn(productRepo, 'getByName').mockResolvedValue(null as Product);
+            return request(app.getHttpServer())
+                .patch('/admin/products/update/123213213')
+                .type('form')
+                .field('name', 'bep')
+                .field('exportPrice', '10')
+                .expect(400);
+        });
+        it('Update product fail . New import price is higher than old export price', () => {
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue({ exportPrice: 30 } as Product);
+            jest.spyOn(productRepo, 'getByName').mockResolvedValue(null as Product);
+            return request(app.getHttpServer())
+                .patch('/admin/products/update/123213213')
+                .type('form')
+                .field('name', 'bep')
+                .field('importPrice', '40')
+                .expect(400);
+        });
     });
 
     describe('Delete product', () => {
         it('Delete product success', () => {
-            jest.spyOn(productRepo, 'getById').mockResolvedValue({ status: ProductStatus.active } as Product);
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue({ status: ProductStatus.active } as Product);
             jest.spyOn(productRepo, 'save').mockResolvedValue({} as Product);
             return request(app.getHttpServer()).delete('/admin/products/123213213').expect(200);
         });
         it('Delete product fail . Can not find this product', () => {
-            jest.spyOn(productRepo, 'getById').mockResolvedValue(null as Product);
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue(null as Product);
             return request(app.getHttpServer()).delete('/admin/products/123213213').expect(404);
         });
 
         it('Delete product fail . this product has been deleted', () => {
-            jest.spyOn(productRepo, 'getById').mockResolvedValue({ status: ProductStatus.unavailable } as Product);
+            jest.spyOn(productRepo, 'getByCondition').mockResolvedValue({
+                status: ProductStatus.unavailable,
+            } as Product);
             return request(app.getHttpServer()).delete('/admin/products/123213213').expect(400);
         });
     });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateOrderDto {
     @ApiProperty()
@@ -16,4 +16,9 @@ export class CreateOrderDto {
     @IsArray()
     @IsNotEmpty()
     productArray: [];
+
+    @ApiProperty({ required: false })
+    @IsUUID()
+    @IsOptional()
+    couponId: string;
 }

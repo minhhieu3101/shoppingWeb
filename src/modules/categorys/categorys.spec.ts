@@ -77,7 +77,7 @@ describe('Category', () => {
 
     describe('Create category', () => {
         it('Create category success', () => {
-            jest.spyOn(cateRepo, 'getByName').mockResolvedValue(null as Category);
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue(null as Category);
             jest.spyOn(cateRepo, 'save').mockResolvedValue({} as Category);
             return request(app.getHttpServer())
                 .post('/admin/category')
@@ -90,7 +90,7 @@ describe('Category', () => {
         });
 
         it('Create category fail . Category is exist', () => {
-            jest.spyOn(cateRepo, 'getByName').mockResolvedValue({} as Category);
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
             return request(app.getHttpServer())
                 .post('/admin/category')
                 .send({
@@ -104,8 +104,7 @@ describe('Category', () => {
 
     describe('Update category', () => {
         it('Update category success', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue({} as Category);
-            jest.spyOn(cateRepo, 'getByName').mockResolvedValue(null as Category);
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
             jest.spyOn(cateRepo, 'update').mockResolvedValue({});
             return request(app.getHttpServer())
                 .patch('/admin/category/update/342424234')
@@ -118,22 +117,22 @@ describe('Category', () => {
         });
 
         it('Update category fail . Category is exist', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue({} as Category);
-            jest.spyOn(cateRepo, 'getByName').mockResolvedValue({ name: 'ttyrtrtty' } as Category);
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue(null);
             return request(app.getHttpServer())
-                .post('/admin/category')
+                .patch('/admin/category/update/342424234')
                 .send({
                     name: 'ttyrtrtty',
                     description: 'rgrtrtr',
                     banner: 'dfdfdf',
                 })
-                .expect(400);
+                .expect(404);
         });
 
         it('Update category fail . Category is exist', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue(null as Category);
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
+            jest.spyOn(cateRepo, 'getByName').mockResolvedValue({ name: 'ttyrtrtty' } as Category);
             return request(app.getHttpServer())
-                .post('/admin/category')
+                .patch('/admin/category/update/342424234')
                 .send({
                     name: 'ttyrtrtty',
                     description: 'rgrtrtr',
@@ -143,7 +142,7 @@ describe('Category', () => {
         });
 
         it('Update category fail . Category is inactive', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue({ status: CategoryStatus.inactive } as Category);
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({ status: CategoryStatus.inactive } as Category);
             return request(app.getHttpServer())
                 .post('/admin/category')
                 .send({
@@ -155,24 +154,15 @@ describe('Category', () => {
         });
     });
 
-    describe('Change category status', () => {
-        it('Change category status to inactive success', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue({ status: CategoryStatus.active } as Category);
-            jest.spyOn(cateRepo, 'save').mockResolvedValue({ status: CategoryStatus.inactive } as Category);
-            return request(app.getHttpServer()).patch('/admin/category/inactive/342424234').expect(200);
+    describe('Delete category', () => {
+        it('delete success', () => {
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
+            jest.spyOn(cateRepo, 'save').mockResolvedValue({} as Category);
+            return request(app.getHttpServer()).delete('/admin/category/342424234').expect(200);
         });
-        it('Change category status to active success', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue({ status: CategoryStatus.inactive } as Category);
-            jest.spyOn(cateRepo, 'save').mockResolvedValue({ status: CategoryStatus.active } as Category);
-            return request(app.getHttpServer()).patch('/admin/category/active/342424234').expect(200);
-        });
-        it('Change category status to inactive fail. Can not find this category', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue(null as Category);
-            return request(app.getHttpServer()).patch('/admin/category/inactive/342424234').expect(404);
-        });
-        it('Change category status to inactive fail. This category is already inactive', () => {
-            jest.spyOn(cateRepo, 'getById').mockResolvedValue({ status: CategoryStatus.inactive } as Category);
-            return request(app.getHttpServer()).patch('/admin/category/inactive/342424234').expect(400);
+        it('delete fail. Can not find this category', () => {
+            jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue(null as Category);
+            return request(app.getHttpServer()).delete('/admin/category/342424234').expect(404);
         });
     });
 

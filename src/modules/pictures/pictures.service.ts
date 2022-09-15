@@ -1,6 +1,6 @@
 import { Product } from './../products/products.entity';
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PictureRepository } from './pictures.repository';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { Picture } from './pictures.entity';
@@ -15,7 +15,7 @@ export class PicturesService {
         return this.pictureRepo.save({ url: url, productId: product });
     }
 
-    getPicture(options: IPaginationOptions, productId: string): Promise<Pagination<Picture>> {
+    async getPicture(options: IPaginationOptions, productId: string): Promise<Pagination<Picture>> {
         const queryBuilder = this.pictureRepo
             .getRepository()
             .createQueryBuilder('p')
@@ -23,6 +23,9 @@ export class PicturesService {
             .where('product.id = :id', {
                 id: productId,
             });
+        if (!queryBuilder.getMany() || (await queryBuilder.getCount()) === 0) {
+            throw new HttpException('This product do not have any picture', HttpStatus.BAD_REQUEST);
+        }
         return this.pictureRepo.paginate(options, queryBuilder);
     }
 }

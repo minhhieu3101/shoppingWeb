@@ -15,6 +15,7 @@ import {
     ParseIntPipe,
     Request,
     Delete,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
@@ -59,10 +60,11 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
+        type: 'uuid',
     })
     @UseInterceptors(ClassSerializerInterceptor)
-    getCategoryForUser(@Param() params): Promise<Category> {
-        return this.categoryService.getCategory({ id: params.id, status: CategoryStatus.active });
+    getCategoryForUser(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
+        return this.categoryService.getCategory({ id: id, status: CategoryStatus.active });
     }
 
     @Get('/admin/category')
@@ -91,9 +93,10 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
+        type: 'uuid',
     })
-    getCategoryForAdmin(@Param() params): Promise<Category> {
-        return this.categoryService.getCategory({ id: params.id });
+    getCategoryForAdmin(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
+        return this.categoryService.getCategory({ id: id });
     }
 
     @Post('/admin/category')
@@ -113,9 +116,10 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
+        type: 'uuid',
     })
-    updateCategory(@Body() category: UpdateCategoryDto, @Param() params): Promise<Category> {
-        return this.categoryService.updateCategory(params.id, category);
+    updateCategory(@Body() category: UpdateCategoryDto, @Param('id', ParseUUIDPipe) id: string): Promise<Category> {
+        return this.categoryService.updateCategory(id, category);
     }
 
     @Delete('/admin/category/:id')
@@ -123,8 +127,9 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
+        type: 'uuid',
     })
-    inactiveCategory(@Param() params): Promise<Category> {
-        return this.categoryService.deleteCategory(params.id);
+    deleteCategory(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
+        return this.categoryService.deleteCategory(id);
     }
 }

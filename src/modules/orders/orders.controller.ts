@@ -13,6 +13,7 @@ import {
     Get,
     Delete,
     Param,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateOrderDto } from './dto/createOrder.dto';
@@ -53,6 +54,9 @@ export class OrdersController {
                         },
                     },
                 },
+                couponId: {
+                    type: 'string',
+                },
             },
         },
     })
@@ -80,17 +84,17 @@ export class OrdersController {
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
-    @ApiParam({ name: 'orderProductId' })
-    deleteOrderProduct(@Param() params) {
-        return this.orderService.deleteOrderProduct(params.orderProductId);
+    @ApiParam({ name: 'orderProductId', type: 'uuid' })
+    deleteOrderProduct(@Param('orderProductId', ParseUUIDPipe) orderProductId: string) {
+        return this.orderService.deleteOrderProduct(orderProductId);
     }
 
     @Delete('user/orders/:orderId')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
-    @ApiParam({ name: 'orderId' })
-    deleteOrder(@Param() params) {
-        return this.orderService.deleteOrder(params.orderId);
+    @ApiParam({ name: 'orderId', type: 'uuid' })
+    deleteOrder(@Param('orderId', ParseUUIDPipe) orderId: string) {
+        return this.orderService.deleteOrder(orderId);
     }
 }

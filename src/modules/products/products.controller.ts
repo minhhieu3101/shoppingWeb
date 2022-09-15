@@ -17,6 +17,7 @@ import {
     DefaultValuePipe,
     ParseIntPipe,
     ClassSerializerInterceptor,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
@@ -39,9 +40,10 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'productId',
+        format: 'uuid',
     })
-    getProductByIdForAdmin(@Param() params, @Request() req) {
-        return this.productService.getProductById(params.productId, req.userRole);
+    getProductByIdForAdmin(@Param('productId', ParseUUIDPipe) productId: string, @Request() req) {
+        return this.productService.getProductById(productId, req.userRole);
     }
 
     @Get('/user/products/:productId')
@@ -50,9 +52,10 @@ export class ProductsController {
     @UseInterceptors(ClassSerializerInterceptor)
     @ApiParam({
         name: 'productId',
+        format: 'uuid',
     })
-    getProductByIdForUser(@Param() params, @Request() req) {
-        return this.productService.getProductById(params.productId, req.userRole);
+    getProductByIdForUser(@Param('productId', ParseUUIDPipe) productId: string, @Request() req) {
+        return this.productService.getProductById(productId, req.userRole);
     }
 
     @Get('/admin/products/categoryId/:categoryId')
@@ -60,6 +63,7 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'categoryId',
+        format: 'uuid',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
@@ -67,7 +71,7 @@ export class ProductsController {
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
         @Request() req,
-        @Param() params,
+        @Param('categoryId', ParseUUIDPipe) categoryId: string,
     ): Promise<Pagination<Product>> {
         limit = limit > 100 ? 100 : limit;
         return this.productService.getAllProductByCategory(
@@ -76,7 +80,7 @@ export class ProductsController {
                 limit,
                 route: 'http://localhost:3000/products/:categoryId',
             },
-            params.categoryId,
+            categoryId,
             req.userRole as Role,
         );
     }
@@ -87,6 +91,7 @@ export class ProductsController {
     @UseInterceptors(ClassSerializerInterceptor)
     @ApiParam({
         name: 'categoryId',
+        format: 'uuid',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
@@ -94,7 +99,7 @@ export class ProductsController {
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
         @Request() req,
-        @Param() params,
+        @Param('categoryId', ParseUUIDPipe) categoryId: string,
     ): Promise<Pagination<Product>> {
         limit = limit > 100 ? 100 : limit;
         return this.productService.getAllProductByCategory(
@@ -103,7 +108,7 @@ export class ProductsController {
                 limit,
                 route: 'http://localhost:3000/products/:categoryId',
             },
-            params.categoryId,
+            categoryId,
             req.userRole as Role,
         );
     }
@@ -157,13 +162,14 @@ export class ProductsController {
     @UseInterceptors(ClassSerializerInterceptor)
     @ApiParam({
         name: 'productId',
+        type: 'uuid',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
     getImageProduct(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
-        @Param() params,
+        @Param('productId', ParseUUIDPipe) productId: string,
     ): Promise<Pagination<Picture>> {
         limit = limit > 100 ? 100 : limit;
         return this.productService.getImageProduct(
@@ -172,7 +178,7 @@ export class ProductsController {
                 limit,
                 route: 'http://localhost:3000/products/images/:productId',
             },
-            params.productId,
+            productId,
         );
     }
 
@@ -190,9 +196,10 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
+        type: 'uuid',
     })
-    updateProduct(@Body() product: UpdateProductDto, @Param() params): Promise<Product> {
-        return this.productService.updateProduct(params.id, product);
+    updateProduct(@Body() product: UpdateProductDto, @Param('id', ParseUUIDPipe) id: string): Promise<Product> {
+        return this.productService.updateProduct(id, product);
     }
 
     @Delete('/admin/products/:id')
@@ -200,8 +207,9 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
+        type: 'uuid',
     })
-    deleteProduct(@Param() params) {
-        return this.productService.changeProductStatus(params.id, ProductStatus.unavailable);
+    deleteProduct(@Param('id', ParseUUIDPipe) id: string) {
+        return this.productService.changeProductStatus(id, ProductStatus.unavailable);
     }
 }

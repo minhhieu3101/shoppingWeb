@@ -30,7 +30,6 @@ export class Product extends EntityBase {
     weight: number;
 
     @Column({ default: 0 })
-    @Exclude()
     quantityInStock: number;
 
     @Column({ default: '' })

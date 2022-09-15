@@ -1,8 +1,12 @@
+import { Coupon } from './../coupons/coupons.entity';
+import { UserCoupon } from './../user-coupon/user-coupon.entity';
+import { UserCouponService } from './../user-coupon/user-coupon.service';
 import { OrderStatus } from './../../commons/enum/orders.enum';
 import { UserService } from './../users/users.service';
 import { OrderProductService } from './../order-product/order-product.service';
 import { OrderRepository } from './orders.repository';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { CouponStatus } from '../../commons/enum/coupons.status';
 
 @Injectable()
 export class OrdersService {
@@ -10,10 +14,13 @@ export class OrdersService {
         private readonly orderRepository: OrderRepository,
         private readonly userService: UserService,
         private readonly orderProductService: OrderProductService,
+        private readonly userCouponService: UserCouponService,
     ) {}
 
     async createOrder(info: any, userId: string) {
+        let orderId;
         try {
+            const couponId = info.couponId;
             const user = await this.userService.getYourInfo(userId);
             const order = await this.orderRepository.save({
                 address: info.address,
@@ -21,12 +28,12 @@ export class OrdersService {
                 totalPayment: 0,
                 userId: user,
             });
+            orderId = order.id;
 
             const productArray = info.productArray;
             let totalPayment = 0;
             for (let i = 0; i < productArray.length; i++) {
                 if (!productArray[i].productId || !productArray[i].quantity) {
-                    await this.orderRepository.deleteOneById(order.id);
                     throw new HttpException('Your product array has some wrong object', HttpStatus.BAD_REQUEST);
                 }
                 const checkProduct = await this.orderProductService.checkProductCanOrder(
@@ -34,18 +41,30 @@ export class OrdersService {
                     productArray[i].quantity,
                 );
                 if (checkProduct === false) {
-                    await this.orderRepository.deleteOneById(order.id);
                     throw new HttpException(
                         `This product ${productArray[i].productId} do not have enough quantity for your order`,
                         HttpStatus.BAD_REQUEST,
                     );
                 }
                 if (checkProduct === null) {
-                    await this.orderRepository.deleteOneById(order.id);
                     throw new HttpException(
                         `This product ${productArray[i].productId} not found`,
                         HttpStatus.NOT_FOUND,
                     );
+                }
+            }
+            let userCoupon;
+            let coupon;
+            if (couponId) {
+                coupon = await this.userCouponService.getCouponByCouponId(couponId);
+                userCoupon = await this.userCouponService.getUserCouponByCouponId(userId, couponId);
+                if (userCoupon.used) {
+                    throw new HttpException('This coupon has been used', HttpStatus.BAD_REQUEST);
+                }
+                userCoupon.used = true;
+                coupon.quantity -= 1;
+                if (coupon.quantity === 0) {
+                    coupon.status = CouponStatus.outOfStock;
                 }
             }
             for (let i = 0; i < productArray.length; i++) {
@@ -58,9 +77,17 @@ export class OrdersService {
                     totalPayment += orderProduct.payment;
                 }
             }
-            order.totalPayment += totalPayment;
+            if (userCoupon instanceof UserCoupon && coupon instanceof Coupon) {
+                totalPayment = (totalPayment * (100 - coupon.discount)) / 100;
+                await userCoupon.save();
+                await coupon.save();
+            }
+            order.totalPayment = totalPayment;
             return await this.orderRepository.save(order);
         } catch (err) {
+            await this.orderRepository.deleteOneById(orderId);
+            console.log(err);
+
             throw err;
         }
     }
@@ -70,7 +97,7 @@ export class OrdersService {
             const order = await this.orderRepository.getAllByCondition({
                 where: { userId: { id: userId }, status: OrderStatus.active },
             });
-            if (!order) {
+            if (!order || order.length === 0) {
                 throw new HttpException('This user do not have any order', HttpStatus.BAD_REQUEST);
             }
             const totalResult = [];
@@ -79,13 +106,8 @@ export class OrdersService {
                 const result = { ...order[i], orderProduct: orderProductArr };
                 totalResult.push({ Order: result });
             }
-            if (totalResult.length === 0) {
-                throw new HttpException('This user do not have any order', HttpStatus.ACCEPTED);
-            }
             return totalResult;
         } catch (err) {
-            console.log(err);
-
             throw err;
         }
     }
@@ -95,7 +117,7 @@ export class OrdersService {
             const orderArr = await this.orderRepository.getAllByCondition({
                 relations: { userId: true },
             });
-            if (!orderArr) {
+            if (!orderArr || orderArr.length === 0) {
                 throw new HttpException('Not have any order from user', HttpStatus.BAD_REQUEST);
             }
             const totalResult = [];
@@ -103,9 +125,6 @@ export class OrdersService {
                 const orderProductArr = await this.orderProductService.getOrderProduct(orderArr[i].id);
                 const result = { ...orderArr[i], orderProduct: orderProductArr };
                 totalResult.push({ Order: result });
-            }
-            if (totalResult.length === 0) {
-                throw new HttpException('All user do not have any order', HttpStatus.ACCEPTED);
             }
             return totalResult;
         } catch (err) {

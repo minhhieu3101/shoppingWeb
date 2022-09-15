@@ -1,4 +1,4 @@
 export enum CouponStatus {
     active = 'active',
-    deleted = 'deleted',
+    outOfStock = 'outOfStock',
 }

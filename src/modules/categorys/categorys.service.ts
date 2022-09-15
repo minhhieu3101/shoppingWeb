@@ -66,6 +66,8 @@ export class CategoryService {
             }
             return await this.categoryRepository.save(info);
         } catch (err) {
+            console.log(err);
+
             throw err;
         }
     }

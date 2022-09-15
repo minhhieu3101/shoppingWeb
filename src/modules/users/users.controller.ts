@@ -18,6 +18,7 @@ import {
     Query,
     ParseIntPipe,
     DefaultValuePipe,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { sendOtpDTO } from './dto/sendOTP.dto';
@@ -93,27 +94,27 @@ export class UserController {
         return this.userService.updateUser(userId, info);
     }
 
-    @Patch('/admin/user/grant/:id')
+    @Patch('/admin/user/grant/:userId')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiParam({
-        name: 'id',
+        name: 'userId',
+        type: 'uuid',
     })
     @ApiBearerAuth()
-    grantPermission(@Param() params) {
-        const userId = params.id;
+    grantPermission(@Param('userId', ParseUUIDPipe) userId: string) {
         return this.userService.grantPermission(userId);
     }
 
-    @Delete('/admin/user/:id')
+    @Delete('/admin/user/:userId')
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiBearerAuth()
     @ApiParam({
-        name: 'id',
+        name: 'userId',
+        type: 'uuid',
     })
-    deleteUser(@Param() params) {
-        const userId = params.id;
+    deleteUser(@Param('userId', ParseUUIDPipe) userId: string) {
         return this.userService.deleteUser(userId);
     }
 }

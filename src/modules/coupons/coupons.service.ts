@@ -1,9 +1,9 @@
 import { CouponRepository } from './coupons.repository';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { CouponStatus } from 'src/commons/enum/coupons.status';
+import { CouponStatus } from '../../commons/enum/coupons.status';
 import { Coupon } from './coupons.entity';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 
 @Injectable()
 export class CouponsService {
@@ -12,6 +12,13 @@ export class CouponsService {
     async createCoupon(couponInfo: any): Promise<Coupon> {
         if (couponInfo.begin > couponInfo.end) {
             throw new HttpException('Coupon begin time is higher than end time', HttpStatus.BAD_REQUEST);
+        }
+        const begin = new Date(couponInfo.begin);
+        couponInfo.begin = new Date(begin.setHours(begin.getHours() - 7));
+        const end = new Date(couponInfo.end);
+        couponInfo.end = new Date(end.setHours(end.getHours() - 7));
+        if (couponInfo.end < new Date()) {
+            throw new HttpException('Coupon end time is lower than date now', HttpStatus.BAD_REQUEST);
         }
         if (
             (couponInfo.quantity as number) <= 0 ||
@@ -28,31 +35,31 @@ export class CouponsService {
         });
 
         if (existCoupon) {
-            throw new HttpException('Coupon is exist', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Coupon name is exist', HttpStatus.BAD_REQUEST);
         }
         return await this.couponRepository.save(couponInfo);
     }
 
-    async deleteCoupon(id: string): Promise<void> {
-        const coupon = await this.couponRepository.getById(id);
-        if (!coupon) {
-            throw new HttpException('Can not find this coupon', HttpStatus.NOT_FOUND);
-        }
-        if (coupon.status === CouponStatus.deleted) {
-            throw new HttpException('Coupon has been deleted already', HttpStatus.BAD_REQUEST);
-        }
-        coupon.status = CouponStatus.deleted;
-        await coupon.save();
-    }
+    // async deleteCoupon(id: string): Promise<void> {
+    //     const coupon = await this.couponRepository.getById(id);
+    //     if (!coupon) {
+    //         throw new HttpException('Can not find this coupon', HttpStatus.NOT_FOUND);
+    //     }
+    //     if (coupon.status === CouponStatus.deleted) {
+    //         throw new HttpException('Coupon has been deleted already', HttpStatus.BAD_REQUEST);
+    //     }
+    //     coupon.status = CouponStatus.deleted;
+    //     await coupon.save();
+    // }
 
     async getAllCoupon(options: IPaginationOptions, role: Role): Promise<Pagination<Coupon>> {
-        if (role == Role.admin) {
+        if (role === Role.admin) {
             return await this.couponRepository.paginate(options);
         }
         const queryBuilder = this.couponRepository
             .getRepository()
             .createQueryBuilder('c')
-            .where('c.status = :active AND c.begin <= now() AND c.end > now()', {
+            .where('c.status = :active AND NOW() BETWEEN c.begin and c.end ', {
                 active: CouponStatus.active,
             });
         return await this.couponRepository.paginate(options, queryBuilder);
@@ -71,21 +78,9 @@ export class CouponsService {
         if (!coupon) {
             throw new HttpException('Can not find this coupon', HttpStatus.NOT_FOUND);
         }
-        if (new Date(coupon.end) < new Date()) {
+        if (new Date(coupon.end) < new Date() || new Date(coupon.begin) > new Date()) {
             throw new HttpException('Coupon is out of date', HttpStatus.BAD_REQUEST);
         }
         return coupon;
-    }
-
-    async checkActiveCoupon(id: string): Promise<boolean> {
-        const coupon = await this.couponRepository.getById(id);
-        if (
-            coupon.status === CouponStatus.deleted ||
-            new Date(coupon.end) < new Date() ||
-            new Date(coupon.begin) > new Date()
-        ) {
-            return false;
-        }
-        return true;
     }
 }

@@ -13,11 +13,12 @@ import {
     UseGuards,
     UseInterceptors,
     Request,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateCouponDto } from './dto/createCoupon.dto';
 import { Roles } from '../guards/roles.decorator';
 import { RolesGuard } from '../guards/roles.guard';
-import { Role } from 'src/commons/enum/roles.enum';
+import { Role } from '../../commons/enum/roles.enum';
 import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
@@ -49,13 +50,13 @@ export class CouponsController {
             {
                 page,
                 limit,
-                route: 'http://localhost:3000/products',
+                route: 'http://localhost:3000/admin/coupons',
             },
             Role.admin,
         );
     }
 
-    @Get('/user/products')
+    @Get('/user/coupons')
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
@@ -70,7 +71,7 @@ export class CouponsController {
             {
                 page,
                 limit,
-                route: 'http://localhost:3000/products',
+                route: 'http://localhost:3000/user/coupons',
             },
             Role.user,
         );
@@ -81,18 +82,20 @@ export class CouponsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'couponId',
+        type: 'uuid',
     })
-    getCouponByIdForAdmin(@Param() params, @Request() req) {
-        return this.couponService.getCouponById(params.couponId, req.userRole);
+    getCouponByIdForAdmin(@Param('couponId', ParseUUIDPipe) couponId: string, @Request() req) {
+        return this.couponService.getCouponById(couponId, req.userRole);
     }
 
     @Get('/user/coupons/:couponId')
-    @Roles(Role.admin)
+    @Roles(Role.user)
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'couponId',
+        type: 'uuid',
     })
-    getCouponByIdForUser(@Param() params, @Request() req) {
-        return this.couponService.getCouponById(params.couponId, req.userRole);
+    getCouponByIdForUser(@Param('couponId', ParseUUIDPipe) couponId: string, @Request() req) {
+        return this.couponService.getCouponById(couponId, req.userRole);
     }
 }
