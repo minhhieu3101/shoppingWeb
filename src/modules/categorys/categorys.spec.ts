@@ -57,21 +57,21 @@ describe('Category', () => {
         });
         it('get category by id admin success', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
-            return request(app.getHttpServer()).get('/admin/category/123123213').expect(200);
+            return request(app.getHttpServer()).get('/admin/category/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(200);
         });
 
         it('get category by id user success', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
-            return request(app.getHttpServer()).get('/user/category/123123213').expect(200);
+            return request(app.getHttpServer()).get('/user/category/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(200);
         });
         it('get category by id admin success', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockRejectedValue(new HttpException('', 500));
-            return request(app.getHttpServer()).get('/admin/category/123123213').expect(404);
+            return request(app.getHttpServer()).get('/admin/category/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(404);
         });
 
         it('get category by id user success', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockRejectedValue(new HttpException('', 500));
-            return request(app.getHttpServer()).get('/user/category/123123213').expect(404);
+            return request(app.getHttpServer()).get('/user/category/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(404);
         });
     });
 
@@ -107,7 +107,7 @@ describe('Category', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
             jest.spyOn(cateRepo, 'update').mockResolvedValue({});
             return request(app.getHttpServer())
-                .patch('/admin/category/update/342424234')
+                .patch('/admin/category/update/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
                 .send({
                     name: 'ttyrtrtty',
                     description: 'rgrtrtr',
@@ -119,7 +119,7 @@ describe('Category', () => {
         it('Update category fail . Category is exist', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue(null);
             return request(app.getHttpServer())
-                .patch('/admin/category/update/342424234')
+                .patch('/admin/category/update/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
                 .send({
                     name: 'ttyrtrtty',
                     description: 'rgrtrtr',
@@ -132,7 +132,7 @@ describe('Category', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
             jest.spyOn(cateRepo, 'getByName').mockResolvedValue({ name: 'ttyrtrtty' } as Category);
             return request(app.getHttpServer())
-                .patch('/admin/category/update/342424234')
+                .patch('/admin/category/update/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
                 .send({
                     name: 'ttyrtrtty',
                     description: 'rgrtrtr',
@@ -158,11 +158,15 @@ describe('Category', () => {
         it('delete success', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue({} as Category);
             jest.spyOn(cateRepo, 'save').mockResolvedValue({} as Category);
-            return request(app.getHttpServer()).delete('/admin/category/342424234').expect(200);
+            return request(app.getHttpServer())
+                .delete('/admin/category/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
+                .expect(200);
         });
         it('delete fail. Can not find this category', () => {
             jest.spyOn(cateRepo, 'getByCondition').mockResolvedValue(null as Category);
-            return request(app.getHttpServer()).delete('/admin/category/342424234').expect(404);
+            return request(app.getHttpServer())
+                .delete('/admin/category/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
+                .expect(404);
         });
     });
 

@@ -113,8 +113,6 @@ export class UserService {
                 message: `Change forgot password in account ${email} is success `,
             };
         } catch (err) {
-            console.log(err);
-
             throw err;
         }
     }
@@ -152,8 +150,6 @@ export class UserService {
                 message: `Change password in account is success `,
             };
         } catch (err) {
-            console.log(err);
-
             throw err;
         }
     }
@@ -212,6 +208,8 @@ export class UserService {
                 message: `Deleted user is success `,
             };
         } catch (err) {
+            console.log(err);
+
             throw err;
         }
     }

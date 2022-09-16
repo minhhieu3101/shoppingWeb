@@ -60,13 +60,10 @@ export class UserCouponService {
             .createQueryBuilder('uc')
             .leftJoinAndSelect('uc.userId', 'user')
             .leftJoinAndSelect('uc.couponId', 'c')
-            .where(
-                'user.id = :userId AND uc.used = false AND c.status = :active AND NOW() BETWEEN c.begin and c.end ',
-                {
-                    userId: userId,
-                    active: CouponStatus.active,
-                },
-            );
+            .where('user.id = :userId AND c.status = :active AND NOW() BETWEEN c.begin and c.end ', {
+                userId: userId,
+                active: CouponStatus.active,
+            });
         if (!queryBulder.getMany() || (await queryBulder.getCount()) === 0) {
             throw new HttpException('This user do not have any coupon', HttpStatus.BAD_REQUEST);
         }

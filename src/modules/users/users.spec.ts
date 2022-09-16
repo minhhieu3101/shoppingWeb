@@ -301,34 +301,43 @@ describe('User', () => {
         it('Grant user success', () => {
             input.status = UserStatus.active || UserStatus.inactive;
             jest.spyOn(userRepo, 'getByCondition').mockResolvedValue(input as User);
-            return request(app.getHttpServer()).patch('/admin/user/grant/123123123123').expect(200);
+            return request(app.getHttpServer())
+                .patch('/admin/user/grant/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
+                .expect(200);
         });
         it('Grant user fail . Can not find this user', () => {
             jest.spyOn(userRepo, 'getByCondition').mockResolvedValue(null as User);
-            return request(app.getHttpServer()).patch('/admin/user/grant/123123123123').expect(404);
+            return request(app.getHttpServer())
+                .patch('/admin/user/grant/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
+                .expect(404);
         });
         it('Grant user fail . User is admin', () => {
             input.role = Role.admin;
             jest.spyOn(userRepo, 'getByCondition').mockResolvedValue(input as User);
-            return request(app.getHttpServer()).patch('/admin/user/grant/123123123123').expect(400);
+            return request(app.getHttpServer())
+                .patch('/admin/user/grant/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca')
+                .expect(400);
         });
     });
 
     describe('Delete user', () => {
         it('Delete user success', () => {
-            input.status = UserStatus.active || UserStatus.inactive;
+            input.status = UserStatus.active;
             input.role = Role.user;
+            console.log(input);
             jest.spyOn(userRepo, 'getByCondition').mockResolvedValue(input as User);
-            return request(app.getHttpServer()).delete('/admin/user/123123123123').expect(200);
+            input.status = UserStatus.deleted;
+            jest.spyOn(userRepo, 'save').mockResolvedValue(input as User);
+            return request(app.getHttpServer()).delete('/admin/user/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(200);
         });
         it('Delete user fail . Can not find this user', () => {
             jest.spyOn(userRepo, 'getByCondition').mockResolvedValue(null as User);
-            return request(app.getHttpServer()).delete('/admin/user/123123123123').expect(404);
+            return request(app.getHttpServer()).delete('/admin/user/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(404);
         });
         it('Delete user fail . User is admin', () => {
             input.role = Role.admin;
             jest.spyOn(userRepo, 'getByCondition').mockResolvedValue(input as User);
-            return request(app.getHttpServer()).delete('/admin/user/123123123123').expect(400);
+            return request(app.getHttpServer()).delete('/admin/user/2dd80e15-ecad-4fd2-9fae-4b4fe3bfacca').expect(400);
         });
     });
 

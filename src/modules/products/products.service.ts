@@ -39,9 +39,6 @@ export class ProductsService {
             if (!category) {
                 throw new HttpException(ERROR.CATEGORY_NOT_FOUND.message, ERROR.CATEGORY_NOT_FOUND.statusCode);
             }
-            if (productInfo.importPrice > productInfo.exportPrice) {
-                throw new HttpException('Import price is higher than export price', HttpStatus.BAD_REQUEST);
-            }
             const currentProduct = await this.productRepository.getByCondition({
                 where: {
                     name: productInfo.name,
@@ -179,7 +176,7 @@ export class ProductsService {
             if (!product) {
                 throw new HttpException(ERROR.PRODUCT_NOT_FOUND.message, ERROR.PRODUCT_NOT_FOUND.statusCode);
             }
-            if (await this.productRepository.getByName(productInfo.name)) {
+            if (productInfo.name !== null && (await this.productRepository.getByName(productInfo.name))) {
                 throw new HttpException('This product name is existed', HttpStatus.BAD_REQUEST);
             }
             if (productInfo.importPrice && !productInfo.exportPrice && productInfo.importPrice > product.exportPrice) {
