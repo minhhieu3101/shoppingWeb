@@ -31,7 +31,8 @@ export class UserCouponController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'couponId',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     @UseInterceptors(ClassSerializerInterceptor)
     saveCoupon(@Request() req, @Param('couponId', ParseUUIDPipe) couponId: string) {

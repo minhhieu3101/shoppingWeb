@@ -12,7 +12,7 @@ async function bootstrap() {
     app.useGlobalInterceptors(new HandleResponseInterceptor());
     const config = new DocumentBuilder()
         .addBearerAuth()
-        .setTitle('Shopping Web')
+        .setTitle('Fresher VMO Shopping Web Project')
         .setDescription('The shoppingWeb API description')
         .setVersion('1.0')
         .build();

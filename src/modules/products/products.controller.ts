@@ -41,6 +41,7 @@ export class ProductsController {
     @ApiParam({
         name: 'productId',
         format: 'uuid',
+        type: 'string',
     })
     getProductByIdForAdmin(@Param('productId', ParseUUIDPipe) productId: string, @Request() req) {
         return this.productService.getProductById(productId, req.userRole);
@@ -53,6 +54,7 @@ export class ProductsController {
     @ApiParam({
         name: 'productId',
         format: 'uuid',
+        type: 'string',
     })
     getProductByIdForUser(@Param('productId', ParseUUIDPipe) productId: string, @Request() req) {
         return this.productService.getProductById(productId, req.userRole);
@@ -64,6 +66,7 @@ export class ProductsController {
     @ApiParam({
         name: 'categoryId',
         format: 'uuid',
+        type: 'string',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
@@ -92,6 +95,7 @@ export class ProductsController {
     @ApiParam({
         name: 'categoryId',
         format: 'uuid',
+        type: 'string',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
@@ -162,7 +166,8 @@ export class ProductsController {
     @UseInterceptors(ClassSerializerInterceptor)
     @ApiParam({
         name: 'productId',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
@@ -196,7 +201,8 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     updateProduct(@Body() product: UpdateProductDto, @Param('id', ParseUUIDPipe) id: string): Promise<Product> {
         return this.productService.updateProduct(id, product);
@@ -207,7 +213,8 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     deleteProduct(@Param('id', ParseUUIDPipe) id: string) {
         return this.productService.changeProductStatus(id, ProductStatus.unavailable);

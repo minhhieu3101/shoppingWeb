@@ -1,3 +1,4 @@
+import { CacheService } from './../cache/cache.service';
 import { SendMailService } from '../sendMail/sendMail.service';
 import { User } from './users.entity';
 import { UserRepository } from './users.repository';
@@ -11,7 +12,11 @@ import { Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly userRepository: UserRepository, private readonly emailService: SendMailService) {}
+    constructor(
+        private readonly userRepository: UserRepository,
+        private readonly emailService: SendMailService,
+        private cacheService: CacheService,
+    ) {}
 
     async createUser(user: any): Promise<User> {
         const userCheck = await this.userRepository.checkUserExist(user.username, user.email);
@@ -126,7 +131,16 @@ export class UserService {
     }
 
     async getYourInfo(id: string): Promise<User> {
-        return await this.userRepository.getById(id);
+        const user = await this.userRepository.getByCondition({
+            where: {
+                id: id,
+                status: Not(UserStatus.deleted),
+            },
+        });
+        if (!user) {
+            throw new HttpException(ERROR.USER_NOT_FOUND.message, ERROR.USER_NOT_FOUND.statusCode);
+        }
+        return user;
     }
 
     async changePassword(id: string, password: string, newPassword: string) {
@@ -204,12 +218,13 @@ export class UserService {
             user.status = UserStatus.deleted;
             user.updatedAt = new Date();
             await this.userRepository.save(user);
+            await this.cacheService.del(`users:${user.id}:accessToken`);
+            await this.cacheService.del(`users:${user.id}:refreshToken`);
             return {
                 message: `Deleted user is success `,
             };
         } catch (err) {
             console.log(err);
-
             throw err;
         }
     }

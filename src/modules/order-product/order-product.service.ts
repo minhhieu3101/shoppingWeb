@@ -83,7 +83,7 @@ export class OrderProductService {
                     id: id,
                     status: OrderStatus.active,
                 },
-                relations: { orderId: true },
+                relations: { orderId: true, productId: true },
             });
             if (!orderProduct) {
                 throw new HttpException('Can not find this order product', HttpStatus.BAD_REQUEST);

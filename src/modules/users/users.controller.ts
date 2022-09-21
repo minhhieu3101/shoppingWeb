@@ -52,6 +52,7 @@ export class UserController {
     @Roles(Role.admin)
     @UseGuards(RolesGuard)
     @ApiBearerAuth()
+    @UseInterceptors(ClassSerializerInterceptor)
     @ApiQuery({ name: 'limit', type: 'number', required: false })
     @ApiQuery({ name: 'page', type: 'number', required: false })
     getAllUser(
@@ -99,7 +100,8 @@ export class UserController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'userId',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     @ApiBearerAuth()
     grantPermission(@Param('userId', ParseUUIDPipe) userId: string) {
@@ -112,7 +114,8 @@ export class UserController {
     @ApiBearerAuth()
     @ApiParam({
         name: 'userId',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     deleteUser(@Param('userId', ParseUUIDPipe) userId: string) {
         return this.userService.deleteUser(userId);

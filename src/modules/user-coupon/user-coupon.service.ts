@@ -2,9 +2,7 @@ import { UserCoupon } from './user-coupon.entity';
 import { CouponsService } from './../coupons/coupons.service';
 import { UserCouponRepository } from './user-coupon.repository';
 import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
-import { UserService } from '../users/users.service';
 import { UserRepository } from '../users/users.repository';
-import { CouponRepository } from '../coupons/coupons.repository';
 import { ERROR } from '../../commons/errorHandling/errorHandling';
 import { CouponStatus } from '../../commons/enum/coupons.status';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
@@ -17,9 +15,7 @@ export class UserCouponService {
     constructor(
         private readonly userCouponRepo: UserCouponRepository,
         private readonly couponService: CouponsService,
-        private readonly userService: UserService,
         private readonly userRepo: UserRepository,
-        private readonly couponRepo: CouponRepository,
     ) {}
 
     async saveCoupon(userId: string, couponId: string): Promise<UserCoupon> {

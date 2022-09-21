@@ -100,11 +100,6 @@ describe('Coupon', () => {
                 jest.spyOn(couponRepo, 'paginate').mockResolvedValue({} as Pagination<Coupon>);
                 return request(app.getHttpServer()).get('/admin/coupons').expect(200);
             });
-
-            it('get all coupons user success', () => {
-                jest.spyOn(couponRepo, 'paginate').mockResolvedValue({} as Pagination<Coupon>);
-                return request(app.getHttpServer()).get('/user/coupons').expect(200);
-            });
             it('get coupon by id admin success', () => {
                 jest.spyOn(couponRepo, 'getById').mockResolvedValue({} as Coupon);
                 return request(app.getHttpServer())

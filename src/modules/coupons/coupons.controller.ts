@@ -82,7 +82,8 @@ export class CouponsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'couponId',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     getCouponByIdForAdmin(@Param('couponId', ParseUUIDPipe) couponId: string, @Request() req) {
         return this.couponService.getCouponById(couponId, req.userRole);
@@ -93,7 +94,8 @@ export class CouponsController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'couponId',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     getCouponByIdForUser(@Param('couponId', ParseUUIDPipe) couponId: string, @Request() req) {
         return this.couponService.getCouponById(couponId, req.userRole);

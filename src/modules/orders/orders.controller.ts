@@ -35,6 +35,7 @@ export class OrdersController {
             properties: {
                 address: {
                     type: 'string',
+                    format: 'uuid',
                 },
                 description: {
                     type: 'string',
@@ -46,7 +47,7 @@ export class OrdersController {
                         required: ['productId', 'quantity'],
                         properties: {
                             productId: {
-                                type: 'string',
+                                type: 'uuid',
                             },
                             quantity: {
                                 type: 'number',
@@ -84,7 +85,7 @@ export class OrdersController {
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
-    @ApiParam({ name: 'orderProductId', type: 'uuid' })
+    @ApiParam({ name: 'orderProductId', format: 'uuid', type: 'string' })
     deleteOrderProduct(@Param('orderProductId', ParseUUIDPipe) orderProductId: string) {
         return this.orderService.deleteOrderProduct(orderProductId);
     }
@@ -93,7 +94,7 @@ export class OrdersController {
     @Roles(Role.user)
     @UseGuards(RolesGuard)
     @UseInterceptors(ClassSerializerInterceptor)
-    @ApiParam({ name: 'orderId', type: 'uuid' })
+    @ApiParam({ name: 'orderId', format: 'uuid', type: 'string' })
     deleteOrder(@Param('orderId', ParseUUIDPipe) orderId: string) {
         return this.orderService.deleteOrder(orderId);
     }

@@ -60,7 +60,8 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     @UseInterceptors(ClassSerializerInterceptor)
     getCategoryForUser(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
@@ -93,7 +94,8 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     getCategoryForAdmin(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
         return this.categoryService.getCategory({ id: id });
@@ -116,7 +118,8 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     updateCategory(@Body() category: UpdateCategoryDto, @Param('id', ParseUUIDPipe) id: string): Promise<Category> {
         return this.categoryService.updateCategory(id, category);
@@ -127,7 +130,8 @@ export class CategoryController {
     @UseGuards(RolesGuard)
     @ApiParam({
         name: 'id',
-        type: 'uuid',
+        format: 'uuid',
+        type: 'string',
     })
     deleteCategory(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
         return this.categoryService.deleteCategory(id);

@@ -25,6 +25,9 @@ export class RolesGuard implements CanActivate {
             }
             return true;
         } catch (err) {
+            if (err instanceof HttpException && err.getStatus() === HttpStatus.NOT_ACCEPTABLE) {
+                throw err;
+            }
             throw new HttpException('Can not get the token or You have timed out for login', HttpStatus.BAD_REQUEST);
         }
     }

@@ -62,6 +62,9 @@ export class CouponsService {
             .where('c.status = :active AND NOW() BETWEEN c.begin and c.end ', {
                 active: CouponStatus.active,
             });
+        if (!queryBuilder.getMany() || (await queryBuilder.getCount()) === 0) {
+            throw new HttpException('Not have any Coupon', HttpStatus.BAD_REQUEST);
+        }
         return await this.couponRepository.paginate(options, queryBuilder);
     }
 
